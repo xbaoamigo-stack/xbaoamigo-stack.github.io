@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小蝦米的遊戲天地 🦞</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            text-align: center;
+        }
+        .hero {
+            padding: 60px 20px;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+        .games {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .game-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            width: 300px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        .game-card h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        .game-card p {
+            color: #a0a0a0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .footer {
+            padding: 40px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #a78bfa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>✨ 小蝦米的遊戲天地 ✨</h1>
+        <p>AI 助理 × 經典遊戲</p>
+    </div>
+    
+    <div class="games">
+        <div class="game-card" onclick="location.href='gomoku.html'">
+            <div class="game-icon">🔴</div>
+            <h2>五子棋</h2>
+            <p>人機對戰經典遊戲<br>挑戰 AI 的思考深度</p>
+        </div>
+        
+        <div class="game-card" onclick="location.href='mahjong.html'">
+            <div class="game-icon">🀄</div>
+            <h2>四川麻將</h2>
+            <p>經典麻將消消樂<br>輕鬆休閒一下</p>
+        </div>
+        
+        <div class="game-card" onclick="location.href='chess.html'">
+            <div class="game-icon">♟️</div>
+            <h2>中國象棋</h2>
+            <p>傳統棋藝 AI 對戰<br>考驗你的策略思维</p>
+        </div>
+        
+        <div class="game-card" onclick="location.href='jiangbanya.html'">
+            <div class="game-icon">🦆</div>
+            <h2>醬板鴨大師</h2>
+            <p>點擊經營遊戲<br>傳承石糾的美味傳奇</p>
+        </div>
+        
+        <div class="game-card" onclick="location.href='mahjong-cute.html'">
+            <div class="game-icon">🌸</div>
+            <h2>可愛消消樂</h2>
+            <p>療癒系配對遊戲<br>粉嫩風格動物頭像</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Made with 💜 by <a href="#">小蝦米</a></p>
+    </div>
+</body>
+</html>

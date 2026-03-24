@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦆 醬板鴨大師 - 石糾的傳奇</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #2d1810 0%, #4a2c20 50%, #6b3d2a 100%);
+            min-height: 100vh;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+        
+        .story-banner {
+            background: linear-gradient(135deg, #8b4513, #d2691e);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .story-banner h1 { font-size: 1.6em; margin-bottom: 8px; }
+        .story-banner p { font-size: 0.9em; opacity: 0.9; line-height: 1.5; }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            min-width: 100px;
+        }
+        .stat-box .label { font-size: 0.8em; opacity: 0.8; }
+        .stat-box .value { font-size: 1.4em; font-weight: bold; color: #ffd700; }
+        
+        .game-area {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .kitchen {
+            background: linear-gradient(145deg, #3d2817, #5a3d2b);
+            border-radius: 15px;
+            padding: 15px;
+            width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .kitchen h2 { color: #ffd700; margin-bottom: 10px; font-size: 1.1em; }
+        
+        .duck-pot {
+            font-size: 4em;
+            margin: 15px 0;
+            animation: bubble 2s ease-in-out infinite;
+        }
+        @keyframes bubble {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .cooking-stage {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .stage-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+        .stage-dot.active { background: #ffd700; color: #000; font-weight: bold; }
+        .stage-dot.done { background: #4ade80; }
+        
+        .cook-btn {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+            width: 100%;
+        }
+        .cook-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
+        .cook-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .shop {
+            background: linear-gradient(145deg, #1a3a1a, #2d5a2d);
+            border-radius: 15px;
+            padding: 15px;
+            width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .shop h2 { color: #90ee90; margin-bottom: 10px; font-size: 1.1em; }
+        
+        .customer {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+        }
+        .customer.waiting { animation: impatient 0.5s ease-in-out infinite; }
+        @keyframes impatient {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .serve-btn {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .serve-btn:hover:not(:disabled) { transform: scale(1.02); }
+        .serve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .inventory {
+            background: linear-gradient(145deg, #2a2a4a, #3d3d6b);
+            border-radius: 15px;
+            padding: 15px;
+            width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .inventory h2 { color: #a78bfa; margin-bottom: 10px; font-size: 1.1em; }
+        
+        .duck-count {
+            font-size: 3em;
+            margin: 10px 0;
+        }
+        
+        .upgrades h3 { font-size: 0.9em; margin: 10px 0 5px; color: #a0a0a0; }
+        .upgrade-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin: 3px;
+            transition: all 0.2s;
+        }
+        .upgrade-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .upgrade-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2d5a2d, #1a3a1a);
+            padding: 30px 40px;
+            border-radius: 20px;
+            z-index: 100;
+            display: none;
+            border: 3px solid #4ade80;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .result-popup h2 { color: #4ade80; font-size: 1.8em; margin-bottom: 10px; }
+        .result-popup p { color: #a0a0a0; margin-bottom: 15px; }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 99; display: none; }
+        
+        .achievement {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #ffd700; }
+            to { box-shadow: 0 0 20px #ffd700; }
+        }
+        
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #ffd700);
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="story-banner">
+        <h1>🦆 醬板鴨大師</h1>
+        <p>楚昭王時代，宮廷廚師石糾為報答鄉親，發明了醬板鴨<br>現在，你來傳承這份美味的傳奇！</p>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-box">
+            <div class="label">金幣 💰</div>
+            <div class="value" id="gold">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">聲望 ⭐</div>
+            <div class="value" id="reputation">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">銷量 📦</div>
+            <div class="value" id="sold">0</div>
+        </div>
+    </div>
+    
+    <div class="game-area">
+        <div class="kitchen">
+            <h2>🍳 石糾的廚房</h2>
+            <div class="duck-pot">🦆</div>
+            <div class="cooking-stage" id="stages">
+                <div class="stage-dot" id="s1">1</div>
+                <div class="stage-dot" id="s2">2</div>
+                <div class="stage-dot" id="s3">3</div>
+                <div class="stage-dot" id="s4">4</div>
+                <div class="stage-dot" id="s5">5</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="cook-progress" style="width: 0%"></div>
+            </div>
+            <button class="cook-btn" id="cook-btn" onclick="startCooking()">
+                開始醬製 🦆
+            </button>
+        </div>
+        
+        <div class="shop">
+            <h2>🏪 貢品商店</h2>
+            <div class="customer" id="customer">👤</div>
+            <p id="customer-status" style="font-size:0.9em;margin-bottom:10px">等待客人...</p>
+            <button class="serve-btn" id="serve-btn" onclick="serveCustomer()" disabled>
+                上菜！ 🍽️
+            </button>
+        </div>
+        
+        <div class="inventory">
+            <h2>📦 倉庫</h2>
+            <div class="duck-count">🦆 × <span id="duck-count">0</span></div>
+            <button class="cook-btn" onclick="buyDuck()">購買鴨子 (💰20)</button>
+            
+            <h3>⬆️ 升級</h3>
+            <button class="upgrade-btn" id="speed-upgrade" onclick="upgrade('speed')">加速 ⚡ (💰100)</button>
+            <button class="upgrade-btn" id="quality-upgrade" onclick="upgrade('quality')">品質 ⭐ (💰200)</button>
+            <button class="upgrade-btn" id="auto-upgrade" onclick="upgrade('auto')">自動 🏭 (💰500)</button>
+            
+            <div class="achievement" id="achievement" style="display:none">
+                🎉 <span id="achievement-text"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    <div class="result-popup" id="popup">
+        <h2 id="popup-title">🎊 成就解鎖！</h2>
+        <p id="popup-text"></p>
+        <button class="serve-btn" onclick="closePopup()">太好了！</button>
+    </div>
+
+    <script>
+        // Game State
+        let gold = 50;
+        let ducks = 0;
+        let reputation = 0;
+        let sold = 0;
+        let cooking = false;
+        let cookStage = 0;
+        let customerWaiting = false;
+        let customerPatience = 0;
+        let upgrades = { speed: 0, quality: 0, auto: 0 };
+        let cookTime = 3000;
+        let duckValue = 30;
+        let autoCook = false;
+        let achievements = new Set();
+        
+        const CUSTOMERS = ['👑', '👸', '🤴', '👨‍🍳', '💂', '🧙', '🧛', '🦸', '🤵', '👳'];
+        
+        // Elements
+        const goldEl = document.getElementById('gold');
+        const repEl = document.getElementById('reputation');
+        const soldEl = document.getElementById('sold');
+        const duckCountEl = document.getElementById('duck-count');
+        const cookBtn = document.getElementById('cook-btn');
+        const serveBtn = document.getElementById('serve-btn');
+        const customerEl = document.getElementById('customer');
+        const customerStatusEl = document.getElementById('customer-status');
+        const progressEl = document.getElementById('cook-progress');
+        
+        function updateUI() {
+            goldEl.textContent = gold;
+            repEl.textContent = reputation;
+            soldEl.textContent = sold;
+            duckCountEl.textContent = ducks;
+            
+            // Update upgrade buttons
+            document.getElementById('speed-upgrade').disabled = gold < 100;
+            document.getElementById('quality-upgrade').disabled = gold < 200;
+            document.getElementById('auto-upgrade').disabled = gold < 500 || upgrades.auto > 0;
+            
+            cookBtn.disabled = cooking || ducks < 1;
+            serveBtn.disabled = !customerWaiting || ducks < 1;
+        }
+        
+        function startCooking() {
+            if (cooking || ducks < 1) return;
+            ducks--;
+            cooking = true;
+            cookStage = 0;
+            cookBtn.disabled = true;
+            
+            let stage = 0;
+            const stages = document.querySelectorAll('.stage-dot');
+            stages.forEach(s => s.className = 'stage-dot');
+            
+            const interval = setInterval(() => {
+                stage++;
+                cookStage = stage;
+                stages.forEach((s, i) => {
+                    s.className = 'stage-dot' + (i < stage ? ' done' : '') + (i === stage ? ' active' : '');
+                });
+                progressEl.style.width = (stage / 5 * 100) + '%';
+                
+                if (stage >= 5) {
+                    clearInterval(interval);
+                    cooking = false;
+                    cookBtn.disabled = false;
+                    cookBtn.textContent = '完成！🦆 再次醬製';
+                    progressEl.style.width = '100%';
+                    
+                    if (autoCook) {
+                        setTimeout(startCooking, 500);
+                    }
+                    
+                    checkAchievement('cook');
+                }
+            }, cookTime / 5);
+            
+            updateUI();
+        }
+        
+        function serveCustomer() {
+            if (!customerWaiting || ducks < 1) return;
+            
+            ducks--;
+            gold += duckValue + Math.floor(reputation / 10);
+            reputation += 2;
+            sold++;
+            customerWaiting = false;
+            
+            customerEl.className = 'customer';
+            customerEl.textContent = '✅';
+            customerStatusEl.textContent = '交易成功！';
+            serveBtn.disabled = true;
+            
+            checkAchievement('sell');
+            spawnCustomer();
+            updateUI();
+            
+            setTimeout(() => {
+                if (!customerWaiting) customerEl.textContent = '👤';
+                customerStatusEl.textContent = '等待客人...';
+            }, 1000);
+        }
+        
+        function spawnCustomer() {
+            if (gold < duckValue) return;
+            
+            customerWaiting = true;
+            customerEl.className = 'customer waiting';
+            customerEl.textContent = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+            customerStatusEl.textContent = '餓了！快上菜！';
+            serveBtn.disabled = ducks < 1;
+            
+            customerPatience = 15;
+            const patienceInterval = setInterval(() => {
+                customerPatience--;
+                if (customerPatience <= 0) {
+                    clearInterval(patienceInterval);
+                    customerEl.className = 'customer';
+                    customerEl.textContent = '😤';
+                    customerStatusEl.textContent = '等太久生氣了！';
+                    reputation = Math.max(0, reputation - 5);
+                    customerWaiting = false;
+                    serveBtn.disabled = true;
+                    updateUI();
+                    setTimeout(spawnCustomer, 2000);
+                }
+            }, 1000);
+        }
+        
+        function buyDuck() {
+            if (gold < 20) return;
+            gold -= 20;
+            ducks++;
+            updateUI();
+        }
+        
+        function upgrade(type) {
+            if (type === 'speed' && gold >= 100) {
+                gold -= 100;
+                upgrades.speed++;
+                cookTime = Math.max(500, 3000 - upgrades.speed * 400);
+            } else if (type === 'quality' && gold >= 200) {
+                gold -= 200;
+                upgrades.quality++;
+                duckValue = 30 + upgrades.quality * 10;
+            } else if (type === 'auto' && gold >= 500 && upgrades.auto === 0) {
+                gold -= 500;
+                upgrades.auto = 1;
+                autoCook = true;
+                if (!cooking) startCooking();
+            }
+            updateUI();
+        }
+        
+        function checkAchievement(type) {
+            if (type === 'cook' && sold === 0 && !achievements.has('first_cook')) {
+                achievements.add('first_cook');
+                showPopup('第一隻鴨！', '你開始了石糾的傳奇！');
+            }
+            if (sold === 10 && !achievements.has('sold_10')) {
+                achievements.add('sold_10');
+                showPopup('小有名氣', '賣出10份醬板鴨！');
+            }
+            if (reputation >= 50 && !achievements.has('famous')) {
+                achievements.add('famous');
+                showPopup('聲名遠播', '你的醬板鴨傳遍了楚國！');
+            }
+            if (gold >= 1000 && !achievements.has('rich')) {
+                achievements.add('rich');
+                showPopup('富甲一方', '累積1000金幣！');
+            }
+        }
+        
+        function showPopup(title, text) {
+            document.getElementById('popup-title').textContent = title;
+            document.getElementById('popup-text').textContent = text;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
+        }
+        
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
+        }
+        
+        // Auto-spawn customer periodically
+        setInterval(() => {
+            if (!customerWaiting && gold >= duckValue && Math.random() > 0.5) {
+                spawnCustomer();
+            }
+        }, 5000);
+        
+        // Initial customer after 2 seconds
+        setTimeout(spawnCustomer, 2000);
+        
+        // Game loop
+        setInterval(() => {
+            if (gold >= duckValue && !customerWaiting && Math.random() > 0.7) {
+                spawnCustomer();
+            }
+        }, 8000);
+        
+        updateUI();
+    </script>
+</body>
+</html>

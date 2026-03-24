@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋 - 人類對 AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { font-size: 1.8em; margin-bottom: 10px; }
+        .info {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .info span { color: #a0a0a0; }
+        .current { color: #fbbf24; font-weight: bold; }
+        #timer { color: #a78bfa; }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(15, 30px);
+            grid-template-rows: repeat(15, 30px);
+            gap: 1px;
+            background: #4a5568;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            background: #d4a574;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .cell:hover { background: #c49a6c; }
+        .cell.black::after { content: '●'; color: #000; }
+        .cell.white::after { content: '○'; color: #fff; }
+        .cell.disabled { pointer-events: none; }
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: #6366f1;
+            color: #fff;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99,102,241,0.4);
+        }
+        .btn-secondary { background: #4b5563; }
+        #result {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        #result h2 { font-size: 2em; margin-bottom: 15px; }
+        #result p { color: #a0a0a0; margin-bottom: 20px; }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 99;
+        }
+        .ai-thinking { color: #a78bfa; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>五子棋 - 人類對 AI</h1>
+    <div class="info">
+        <span>⏱️ <span id="timer">00:00</span></span>
+        <span>🪨 <span id="current" class="current">您的回合 (黑子)</span></span>
+    </div>
+    <div id="board"></div>
+    <div class="btn-group">
+        <button onclick="restart()">重新開始</button>
+        <button class="btn-secondary" onclick="location.href='index.html'">回首頁</button>
+    </div>
+    <div class="overlay" id="overlay"></div>
+    <div id="result">
+        <h2 id="resultText"></h2>
+        <p id="resultTime"></p>
+        <button onclick="restart()">再玩一次</button>
+    </div>
+
+    <script>
+        const SIZE = 15;
+        let board = [];
+        let currentPlayer = 'black';
+        let gameOver = false;
+        let startTime = Date.now();
+        let timerInterval;
+        let aiThinking = false;
+
+        function init() {
+            board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(null));
+            currentPlayer = 'black';
+            gameOver = false;
+            aiThinking = false;
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            renderBoard();
+            hideResult();
+        }
+
+        function updateTimer() {
+            if (gameOver) return;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            document.getElementById('timer').textContent = `${mins}:${secs}`;
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    if (board[i][j]) cell.classList.add(board[i][j]);
+                    if (gameOver || (currentPlayer === 'white') || aiThinking) {
+                        cell.classList.add('disabled');
+                    }
+                    cell.addEventListener('click', () => handleClick(i, j));
+                    boardEl.appendChild(cell);
+                }
+            }
+        }
+
+        function handleClick(row, col) {
+            if (gameOver || board[row][col] || currentPlayer === 'white' || aiThinking) return;
+            makeMove(row, col, 'black');
+            if (!gameOver) {
+                currentPlayer = 'white';
+                aiThinking = true;
+                document.getElementById('current').innerHTML = '<span class="ai-thinking">AI 思考中...</span>';
+                renderBoard();
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function makeMove(row, col, player) {
+            board[row][col] = player;
+            renderBoard();
+            if (checkWin(row, col, player)) {
+                gameOver = true;
+                showResult(player === 'black' ? '您獲勝了！🎉' : 'AI 獲勝了！');
+                return;
+            }
+            if (isDraw()) {
+                gameOver = true;
+                showResult('平手！');
+            }
+        }
+
+        function aiMove() {
+            if (gameOver) return;
+            let bestScore = -Infinity;
+            let bestMove = null;
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE; j++) {
+                    if (!board[i][j]) {
+                        let score = evaluatePosition(i, j, 'white') * 1.1 + evaluatePosition(i, j, 'black');
+                        // Add slight randomness
+                        score += Math.random() * 2;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = { row: i, col: j };
+                        }
+                    }
+                }
+            }
+            if (bestMove) {
+                makeMove(bestMove.row, bestMove.col, 'white');
+                currentPlayer = 'black';
+                aiThinking = false;
+                document.getElementById('current').textContent = '您的回合 (黑子)';
+                renderBoard();
+            }
+        }
+
+        function evaluatePosition(row, col, player) {
+            const directions = [[1,0],[0,1],[1,1],[1,-1]];
+            let score = 0;
+            for (const [dr, dc] of directions) {
+                let count = 1;
+                let open = 0;
+                for (let k = 1; k < 5; k++) {
+                    const nr = row + dr * k, nc = col + dc * k;
+                    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === player) count++;
+                    else if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !board[nr][nc]) { open++; break; }
+                    else break;
+                }
+                for (let k = 1; k < 5; k++) {
+                    const nr = row - dr * k, nc = col - dc * k;
+                    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === player) count++;
+                    else if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !board[nr][nc]) { open++; break; }
+                    else break;
+                }
+                if (count >= 5) score += 10000;
+                else if (count === 4 && open === 2) score += 5000;
+                else if (count === 4 && open === 1) score += 1000;
+                else if (count === 3 && open === 2) score += 500;
+                else if (count === 3 && open === 1) score += 100;
+                else if (count === 2 && open === 2) score += 50;
+            }
+            return score;
+        }
+
+        function checkWin(row, col, player) {
+            const directions = [[1,0],[0,1],[1,1],[1,-1]];
+            for (const [dr, dc] of directions) {
+                let count = 1;
+                for (let k = 1; k < 5; k++) {
+                    const nr = row + dr * k, nc = col + dc * k;
+                    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === player) count++;
+                    else break;
+                }
+                for (let k = 1; k < 5; k++) {
+                    const nr = row - dr * k, nc = col - dc * k;
+                    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === player) count++;
+                    else break;
+                }
+                if (count >= 5) return true;
+            }
+            return false;
+        }
+
+        function isDraw() {
+            return board.every(row => row.every(cell => cell !== null));
+        }
+
+        function showResult(text) {
+            clearInterval(timerInterval);
+            document.getElementById('resultText').textContent = text;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            document.getElementById('resultTime').textContent = `您的時間：${mins}:${secs}`;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function hideResult() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+        }
+
+        function restart() {
+            init();
+        }
+
+        init();
+    </script>
+</body>
+</html>

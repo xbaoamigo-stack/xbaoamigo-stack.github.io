@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 可愛麻將消消樂 ✨</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffeef8 0%, #fff5f9 50%, #f0f8ff 100%);
+            min-height: 100vh;
+            color: #5a4a6a;
+            text-align: center;
+            padding: 15px;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+        
+        h1 { 
+            font-size: 1.8em; 
+            margin-bottom: 8px;
+            color: #ff6b9d;
+            text-shadow: 2px 2px 4px rgba(255,107,157,0.2);
+        }
+        h1::before { content: '🌸 '; }
+        h1::after { content: ' 🌸'; }
+        
+        .info {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 12px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        .info-item {
+            background: linear-gradient(135deg, #fff, #ffeef8);
+            padding: 8px 18px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(255,107,157,0.15);
+        }
+        .info-item span { color: #ff6b9d; }
+        
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(8, 55px);
+            gap: 6px;
+            justify-content: center;
+            margin: 15px auto;
+        }
+        .tile {
+            width: 55px;
+            height: 70px;
+            background: linear-gradient(145deg, #fff, #fff5f9);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 4px 8px rgba(255,107,157,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 2px solid #ffe0ec;
+            user-select: none;
+        }
+        .tile:hover:not(.matched) {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 
+                0 12px 20px rgba(255,107,157,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            border-color: #ffb6d3;
+        }
+        .tile.matched {
+            background: linear-gradient(145deg, #d4ffea, #b8f5d8);
+            border-color: #90EE90;
+            opacity: 0.4;
+            cursor: default;
+            transform: scale(0.85);
+            box-shadow: none;
+        }
+        .tile.selected {
+            border-color: #ff6b9d;
+            box-shadow: 
+                0 0 0 3px #ff6b9d,
+                0 8px 15px rgba(255,107,157,0.4);
+            transform: translateY(-4px) scale(1.08);
+        }
+        .tile.hint {
+            animation: cute-pulse 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes cute-pulse {
+            0% { 
+                box-shadow: 0 0 0 3px #ff85a2, 0 0 15px rgba(255,133,162,0.4);
+                transform: scale(1);
+            }
+            100% { 
+                box-shadow: 0 0 0 5px #ff6b9d, 0 0 25px rgba(255,107,157,0.6);
+                transform: scale(1.08);
+            }
+        }
+        
+        .btn-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b9d, #ff85a2);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255,107,157,0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255,107,157,0.5);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #fff, #f0f8ff);
+            color: #7c6a8a;
+            border: 2px solid #e0d0f0;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #f0f8ff, #e8f4ff);
+            transform: translateY(-2px);
+        }
+        
+        #result {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fff, #fff5f9);
+            padding: 40px 50px;
+            border-radius: 25px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 20px 60px rgba(255,107,157,0.3);
+            border: 3px solid #ffe0ec;
+        }
+        #result h2 { 
+            font-size: 2.2em; 
+            color: #ff6b9d;
+            margin-bottom: 15px;
+        }
+        #result p { 
+            color: #8a7a9a;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,200,220,0.5);
+            backdrop-filter: blur(3px);
+            display: none;
+            z-index: 99;
+        }
+        .tiles-left { color: #ff6b9d; }
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 1s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes sparkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+        
+        .cute-char {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <h1>可愛麻將消消樂</h1>
+    <div class="info">
+        <div class="info-item">剩餘: <span id="left">48</span></div>
+        <div class="info-item">配對: <span id="pairs">0</span> 對</div>
+    </div>
+    <div id="grid"></div>
+    <div class="btn-group">
+        <button class="btn-primary" onclick="shuffle()">🔀 重新洗牌</button>
+        <button class="btn-secondary" onclick="init()">🌟 新遊戲</button>
+        <button class="btn-secondary" onclick="location.href='index.html'">🏠 回首頁</button>
+    </div>
+    <div class="overlay" id="overlay"></div>
+    <div id="result">
+        <div class="cute-char">🎉</div>
+        <h2>恭喜過關！</h2>
+        <p id="resultText">配對了 24 對</p>
+        <button class="btn-primary" onclick="init()">再玩一次 ✨</button>
+    </div>
+
+    <script>
+        // 可愛角色圖示
+        const CUTE_TILES = [
+            '🐱','🐶','🐰','🦊','🐻','🐼','🐨','🐯',
+            '🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦',
+            '🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄',
+            '🐝','🦋','🐢','🐙','🦀','🐠','🐬','🦈'
+        ];
+        
+        let tiles = [];
+        let selected = null;
+        let matched = 0;
+        let isProcessing = false;
+
+        function init() {
+            matched = 0;
+            selected = null;
+            isProcessing = false;
+            document.getElementById('pairs').textContent = '0';
+            
+            // Create pairs from cute characters
+            let pool = [];
+            const usedTiles = CUTE_TILES.slice(0, 24); // 24 unique pairs
+            for (let i = 0; i < 24; i++) {
+                pool.push(usedTiles[i], usedTiles[i]);
+            }
+            
+            // Shuffle
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            
+            tiles = pool;
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            tiles.forEach((tile, idx) => {
+                const el = document.createElement('div');
+                el.className = 'tile';
+                el.textContent = tile;
+                el.dataset.idx = idx;
+                if (tile === null) {
+                    el.classList.add('matched');
+                    el.textContent = '✨';
+                }
+                el.addEventListener('click', () => handleClick(idx));
+                grid.appendChild(el);
+            });
+            document.getElementById('left').textContent = tiles.filter(t => t !== null).length;
+        }
+
+        function handleClick(idx) {
+            if (isProcessing || tiles[idx] === null) return;
+            
+            const tileEls = document.querySelectorAll('.tile');
+            tileEls.forEach(el => el.classList.remove('selected', 'hint'));
+            
+            if (selected === idx) {
+                selected = null;
+                return;
+            }
+            
+            if (selected === null) {
+                selected = idx;
+                tileEls[idx].classList.add('selected');
+            } else {
+                isProcessing = true;
+                
+                if (tiles[selected] === tiles[idx]) {
+                    // Match!
+                    createSparkles(tileEls[idx]);
+                    createSparkles(tileEls[selected]);
+                    
+                    tiles[selected] = null;
+                    tiles[idx] = null;
+                    matched++;
+                    document.getElementById('pairs').textContent = matched;
+                    selected = null;
+                    
+                    setTimeout(() => {
+                        render();
+                        isProcessing = false;
+                        
+                        if (tiles.every(t => t === null)) {
+                            setTimeout(showResult, 400);
+                        }
+                    }, 300);
+                } else {
+                    // No match - show hint animation
+                    const prevEl = tileEls[selected];
+                    const currEl = tileEls[idx];
+                    
+                    prevEl.classList.remove('selected');
+                    prevEl.classList.add('hint');
+                    currEl.classList.add('hint');
+                    
+                    setTimeout(() => {
+                        prevEl.classList.remove('hint');
+                        currEl.classList.remove('hint');
+                        selected = idx;
+                        currEl.classList.add('selected');
+                        isProcessing = false;
+                    }, 400);
+                }
+            }
+        }
+
+        function createSparkles(el) {
+            const rect = el.getBoundingClientRect();
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                sparkle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                sparkle.style.background = ['#ffd700', '#ff69b4', '#ff6b9d', '#90ee90'][Math.floor(Math.random() * 4)];
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 1000);
+            }
+        }
+
+        function shuffle() {
+            let remaining = tiles.map((t, i) => t !== null ? { tile: t, idx: i } : null).filter(x => x);
+            for (let i = remaining.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+            }
+            remaining.forEach((item, pos) => {
+                tiles[item.idx] = item.tile;
+            });
+            selected = null;
+            render();
+        }
+
+        function showResult() {
+            document.getElementById('resultText').textContent = `配對了 ${matched} 對可愛角色！🌸`;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('result').style.display = 'block';
+        }
+
+        init();
+    </script>
+</body>
+</html>
