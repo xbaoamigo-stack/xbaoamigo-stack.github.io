@@ -274,6 +274,7 @@
         <div class="inventory">
             <h2>📦 倉庫</h2>
             <div class="duck-count">🦆 × <span id="duck-count">0</span></div>
+            <p style="font-size:0.8em;margin:5px 0">生: <span id="raw-count">0</span> | 熟: <span id="cooked-count">0</span></p>
             <button class="cook-btn" onclick="buyDuck()">購買鴨子 (💰20)</button>
             
             <h3>⬆️ 升級</h3>
@@ -297,7 +298,8 @@
     <script>
         // Game State
         let gold = 50;
-        let ducks = 0;
+        let rawDucks = 0;
+        let cookedDucks = 0;
         let reputation = 0;
         let sold = 0;
         let cooking = false;
@@ -316,7 +318,6 @@
         const goldEl = document.getElementById('gold');
         const repEl = document.getElementById('reputation');
         const soldEl = document.getElementById('sold');
-        const duckCountEl = document.getElementById('duck-count');
         const cookBtn = document.getElementById('cook-btn');
         const serveBtn = document.getElementById('serve-btn');
         const customerEl = document.getElementById('customer');
@@ -327,20 +328,22 @@
             goldEl.textContent = gold;
             repEl.textContent = reputation;
             soldEl.textContent = sold;
-            duckCountEl.textContent = ducks;
+            document.getElementById('duck-count').textContent = rawDucks + cookedDucks;
+            document.getElementById('raw-count').textContent = rawDucks;
+            document.getElementById('cooked-count').textContent = cookedDucks;
             
             // Update upgrade buttons
             document.getElementById('speed-upgrade').disabled = gold < 100;
             document.getElementById('quality-upgrade').disabled = gold < 200;
             document.getElementById('auto-upgrade').disabled = gold < 500 || upgrades.auto > 0;
             
-            cookBtn.disabled = cooking || ducks < 1;
-            serveBtn.disabled = !customerWaiting || ducks < 1;
+            cookBtn.disabled = cooking || rawDucks < 1;
+            serveBtn.disabled = !customerWaiting || cookedDucks < 1;
         }
         
         function startCooking() {
-            if (cooking || ducks < 1) return;
-            ducks--;
+            if (cooking || rawDucks < 1) return;
+            rawDucks--;
             cooking = true;
             cookStage = 0;
             cookBtn.disabled = true;
@@ -360,6 +363,7 @@
                 if (stage >= 5) {
                     clearInterval(interval);
                     cooking = false;
+                    cookedDucks++;
                     cookBtn.disabled = false;
                     cookBtn.textContent = '完成！🦆 再次醬製';
                     progressEl.style.width = '100%';
@@ -369,6 +373,7 @@
                     }
                     
                     checkAchievement('cook');
+                    updateUI();
                 }
             }, cookTime / 5);
             
@@ -376,9 +381,9 @@
         }
         
         function serveCustomer() {
-            if (!customerWaiting || ducks < 1) return;
+            if (!customerWaiting || cookedDucks < 1) return;
             
-            ducks--;
+            cookedDucks--;
             gold += duckValue + Math.floor(reputation / 10);
             reputation += 2;
             sold++;
@@ -406,7 +411,7 @@
             customerEl.className = 'customer waiting';
             customerEl.textContent = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
             customerStatusEl.textContent = '餓了！快上菜！';
-            serveBtn.disabled = ducks < 1;
+            serveBtn.disabled = cookedDucks < 1;
             
             customerPatience = 15;
             const patienceInterval = setInterval(() => {
@@ -428,7 +433,7 @@
         function buyDuck() {
             if (gold < 20) return;
             gold -= 20;
-            ducks++;
+            rawDucks++;
             updateUI();
         }
         
