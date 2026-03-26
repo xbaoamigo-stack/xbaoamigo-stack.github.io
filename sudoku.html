@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>數獨挑戰賽</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    h1 { font-size: 2rem; margin-bottom: 1rem; color: #e94560; }
+
+    /* 螢幕切換 */
+    .screen { display: none; text-align: center; }
+    .screen.active { display: block; }
+
+    /* 名字輸入 */
+    .name-input {
+      padding: 15px 25px;
+      font-size: 1.2rem;
+      border: 2px solid #e94560;
+      border-radius: 10px;
+      background: #0f3460;
+      color: #fff;
+      text-align: center;
+      width: 280px;
+    }
+    .btn {
+      padding: 15px 35px;
+      font-size: 1.1rem;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn:hover { background: #ff6b6b; transform: scale(1.05); }
+
+    /* 計時器 */
+    .timer {
+      font-size: 2.5rem;
+      color: #e94560;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    /* 數獨網格 */
+    .sudoku-board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      background: #fff;
+      border: 3px solid #e94560;
+      border-radius: 5px;
+      width: min(90vw, 360px);
+      aspect-ratio: 1;
+    }
+    .cell {
+      background: #16213e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: min(5vw, 22px);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .cell:hover { background: #1a1a4e; }
+    .cell.fixed { color: #4ecca3; cursor: default; }
+    .cell.user-input { color: #fff; }
+    .cell.selected { background: #0f3460; border: 2px solid #e94560; }
+    .cell.error { color: #ff6b6b; }
+    /* 3x3 分隔線加粗 */
+    .cell:nth-child(3n) { border-right: 2px solid #e94560; }
+    .cell:nth-child(9n) { border-right: none; }
+    .cell:nth-child(n+19):nth-child(-n+27),
+    .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #e94560; }
+
+    /* 數字鍵盤 */
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+      width: min(90vw, 360px);
+    }
+    .numpad button {
+      padding: 12px;
+      font-size: 1.2rem;
+      background: #0f3460;
+      color: #fff;
+      border: 1px solid #e94560;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .numpad button:hover { background: #1a4a80; }
+    .numpad button:active { background: #e94560; }
+
+    /* 排行榜 */
+    .leaderboard {
+      width: min(90vw, 400px);
+      background: #0f3460;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-bottom: 1px solid #1a1a2e;
+      font-size: 1rem;
+    }
+    .leaderboard-item:nth-child(1) { color: #ffd700; font-weight: bold; }
+    .leaderboard-item:nth-child(2) { color: #c0c0c0; }
+    .leaderboard-item:nth-child(3) { color: #cd7f32; }
+    .leaderboard-item span:first-child { font-weight: bold; }
+
+    /* 完成畫面 */
+    .finish-time {
+      font-size: 3rem;
+      color: #4ecca3;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .rank-badge {
+      font-size: 1.2rem;
+      color: #ffd700;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 名字輸入 -->
+<div id="screen-start" class="screen active">
+  <h1>🧩 數獨挑戰賽</h1>
+  <input class="name-input" id="playerName" placeholder="輸入你的名字" maxlength="20">
+  <br>
+  <button class="btn" onclick="startGame()">開始挑戰</button>
+  <br>
+  <button class="btn" style="background:#0f3460;" onclick="showLeaderboard()">📊 排行榜</button>
+</div>
+
+<!-- 遊戲畫面 -->
+<div id="screen-game" class="screen">
+  <h1>🧩 數獨挑戰賽</h1>
+  <div class="timer" id="timer">00:00</div>
+  <div class="sudoku-board" id="board"></div>
+  <div class="numpad" id="numpad"></div>
+  <button class="btn" style="background:#555; margin-top:15px;" onclick="confirmRestart()">重新開始</button>
+</div>
+
+<!-- 完成畫面 -->
+<div id="screen-finish" class="screen">
+  <h1>🎉 挑戰完成！</h1>
+  <div class="rank-badge" id="rankBadge"></div>
+  <div class="finish-time" id="finishTime"></div>
+  <button class="btn" onclick="startGame()">再挑戰一次</button>
+  <br>
+  <button class="btn" style="background:#0f3460;" onclick="showLeaderboard()">📊 排行榜</button>
+</div>
+
+<!-- 排行榜畫面 -->
+<div id="screen-leaderboard" class="screen">
+  <h1>🏆 排行榜</h1>
+  <div class="leaderboard" id="leaderboardList"></div>
+  <button class="btn" style="background:#555; margin-top:20px;" onclick="backToStart()">返回</button>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+  // Firebase 設定（公開設定，不用擔心安全問題）
+  const firebaseConfig = {
+    apiKey: "AIzaSyDELEP6UmKBjfLRxdW-A6jsxrXHky5BRiM",
+    authDomain: "sudoku-contest.firebaseapp.com",
+    databaseURL: "https://sudoku-contest-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "sudoku-contest",
+    storageBucket: "sudoku-contest.appspot.com",
+    messagingSenderId: "56913879965",
+    appId: "1:56913879965:web:8e3e3e3e3e3e3e3e3e3e3e"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // 遊戲狀態
+  let playerName = '';
+  let solution = [];
+  let puzzle = [];
+  let userGrid = [];
+  let timerInterval = null;
+  let elapsedSeconds = 0;
+  let selectedCell = null;
+  let gameStarted = false;
+
+  // 題目庫（簡單到困難）
+  const puzzles = [
+    { p: [[5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],[8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],[0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]], s: [[5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]] },
+    { p: [[0,0,0,2,6,0,7,0,1],[6,8,0,0,7,0,0,9,0],[1,9,0,0,0,4,5,0,0],[8,2,0,1,0,0,0,4,0],[0,0,4,6,0,2,9,0,0],[0,5,0,0,0,3,0,2,8],[0,0,9,3,0,0,0,7,4],[0,4,0,0,5,0,0,3,6],[7,0,3,0,1,8,0,0,0]], s: [[4,3,5,2,6,9,7,8,1],[6,8,2,5,7,1,4,9,3],[1,9,7,8,3,4,5,6,2],[8,2,6,1,9,5,3,4,7],[3,7,4,6,8,2,9,1,5],[9,5,1,7,4,3,6,2,8],[5,1,9,3,2,6,8,7,4],[2,6,8,4,5,7,1,3,9],[7,4,3,9,1,8,2,5,6]] },
+    { p: [[0,2,0,6,0,8,0,0,0],[5,8,0,0,0,9,7,0,0],[0,0,0,0,4,0,0,0,0],[3,7,0,0,0,0,5,0,0],[6,0,0,0,0,0,0,0,4],[0,0,8,0,0,0,0,1,3],[0,0,0,0,2,0,0,0,0],[0,0,9,8,0,0,0,3,6],[0,0,0,3,0,6,0,9,0]], s: [[1,2,3,6,7,8,9,4,5],[5,8,4,2,3,9,7,6,1],[9,6,7,1,4,5,3,2,8],[3,7,2,4,6,1,5,8,9],[6,9,1,5,8,3,2,7,4],[4,5,8,7,9,2,6,1,3],[8,3,6,9,2,4,1,5,7],[2,1,9,8,5,7,4,3,6],[7,4,5,3,1,6,8,9,2]] },
+  ];
+
+  // 切換畫面
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // 名字輸入 → 開始遊戲
+  function startGame() {
+    playerName = document.getElementById('playerName').value.trim() || '匿名玩家';
+    initGame();
+    showScreen('screen-game');
+  }
+
+  // 初始化遊戲
+  function initGame() {
+    clearInterval(timerInterval);
+    elapsedSeconds = 0;
+    gameStarted = false;
+    document.getElementById('timer').textContent = '00:00';
+
+    // 隨機選題
+    const idx = Math.floor(Math.random() * puzzles.length);
+    puzzle = puzzles[idx].p.map(r => [...r]);
+    solution = puzzles[idx].s;
+    userGrid = puzzle.map(r => [...r]);
+
+    renderBoard();
+    renderNumpad();
+    selectedCell = null;
+  }
+
+  // 渲染網格
+  function renderBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    for (let i = 0; i < 81; i++) {
+      const r = Math.floor(i / 9), c = i % 9;
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (puzzle[r][c] !== 0) {
+        cell.textContent = puzzle[r][c];
+        cell.classList.add('fixed');
+      } else {
+        cell.textContent = userGrid[r][c] !== 0 ? userGrid[r][c] : '';
+        cell.classList.add('user-input');
+      }
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.onclick = () => selectCell(r, c);
+      board.appendChild(cell);
+    }
+  }
+
+  // 選取格子
+  function selectCell(r, c) {
+    if (puzzle[r][c] !== 0) return; // 固定格不能改
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+    const idx = r * 9 + c;
+    document.querySelectorAll('.cell')[idx].classList.add('selected');
+    selectedCell = { r, c };
+
+    // 啟動計時（第一次選格才開始）
+    if (!gameStarted) {
+      gameStarted = true;
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+  }
+
+  // 計時器
+  function updateTimer() {
+    elapsedSeconds++;
+    const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+    const s = String(elapsedSeconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }
+
+  // 數字鍵盤
+  function renderNumpad() {
+    const np = document.getElementById('numpad');
+    np.innerHTML = '';
+    for (let n = 1; n <= 9; n++) {
+      const btn = document.createElement('button');
+      btn.textContent = n;
+      btn.onclick = () => inputNumber(n);
+      np.appendChild(btn);
+    }
+    const clr = document.createElement('button');
+    clr.textContent = '✕';
+    clr.onclick = () => inputNumber(0);
+    clr.style.background = '#e94560';
+    np.appendChild(clr);
+  }
+
+  // 輸入數字
+  function inputNumber(n) {
+    if (!selectedCell) return;
+    const { r, c } = selectedCell;
+    if (puzzle[r][c] !== 0) return;
+
+    userGrid[r][c] = n;
+    const idx = r * 9 + c;
+    const cell = document.querySelectorAll('.cell')[idx];
+    cell.textContent = n ? n : '';
+
+    // 檢查是否完成
+    if (n !== 0 && n !== solution[r][c]) {
+      cell.classList.add('error');
+      setTimeout(() => cell.classList.remove('error'), 500);
+    }
+
+    checkComplete();
+  }
+
+  // 檢查完成
+  function checkComplete() {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (userGrid[r][c] !== solution[r][c]) return;
+      }
+    }
+    // 完成！
+    clearInterval(timerInterval);
+    const time = elapsedSeconds;
+    const m = String(Math.floor(time / 60)).padStart(2, '0');
+    const s = String(time % 60).padStart(2, '0');
+
+    // 寫入排行榜
+    const newRef = db.ref('leaderboard').push();
+    newRef.set({
+      name: playerName,
+      time: time,
+      date: new Date().toISOString().split('T')[0]
+    }).then(() => {
+      // 取排名
+      return db.ref('leaderboard').orderByChild('time').once('value');
+    }).then(snapshot => {
+      let rank = 1;
+      snapshot.forEach(child => {
+        if (child.val().time < time) rank++;
+      });
+      document.getElementById('rankBadge').textContent = `你的排名：第 ${rank} 名`;
+      document.getElementById('finishTime').textContent = `${m}:${s}`;
+      showScreen('screen-finish');
+    });
+  }
+
+  // 重新開始確認
+  function confirmRestart() {
+    if (confirm('確定要重新開始嗎？')) {
+      initGame();
+    }
+  }
+
+  // 顯示排行榜
+  function showLeaderboard() {
+    showScreen('screen-leaderboard');
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">載入中...</div>';
+    db.ref('leaderboard').orderByChild('time').limitToFirst(20).once('value').then(snapshot => {
+      list.innerHTML = '';
+      let rank = 1;
+      if (!snapshot.exists()) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">還沒有記錄，趕快挑戰吧！</div>';
+        return;
+      }
+      snapshot.forEach(child => {
+        const d = child.val();
+        const m = String(Math.floor(d.time / 60)).padStart(2, '0');
+        const s = String(d.time % 60).padStart(2, '0');
+        list.innerHTML += `<div class="leaderboard-item"><span>#${rank}</span><span>${d.name}</span><span>${m}:${s}</span></div>`;
+        rank++;
+      });
+    });
+  }
+
+  function backToStart() {
+    showScreen('screen-start');
+  }
+</script>
+</body>
+</html>
