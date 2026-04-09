@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐠 小蝦米水族箱</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a1628;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  #aquarium {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #0d4f7a 0%, #0a2a4a 40%, #061a30 80%, #030f1e 100%);
+    overflow: hidden;
+  }
+  canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #ui {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+  }
+  #ui button {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    backdrop-filter: blur(6px);
+    transition: background 0.2s;
+  }
+  #ui button:hover { background: rgba(255,255,255,0.22); }
+  #hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.35);
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 10;
+  }
+  #title {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.25);
+    font-size: 13px;
+    letter-spacing: 3px;
+    z-index: 10;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="aquarium">
+  <canvas id="canvas"></canvas>
+  <div id="title">🐠 小蝦米水族箱</div>
+  <div id="ui">
+    <button id="btnFeed">🫧 餵食</button>
+    <button id="btnMoreFish">➕ 更多魚</button>
+  </div>
+  <div id="hint">點擊水中任意處餵食 · 魚會游過來</div>
+</div>
+
+<script>
+// ─── Canvas Setup ────────────────────────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); initScene(); });
+
+// ─── Utility ────────────────────────────────────────────────────────────────
+function rand(min, max) { return min + Math.random() * (max - min); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// ─── Particle System (Bubbles + Plankton) ────────────────────────────────────
+class Bubble {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = rand(0, W);
+    this.y = H + rand(10, 60);
+    this.r = rand(2, 6);
+    this.speed = rand(0.3, 0.8);
+    this.wobble = rand(0, Math.PI * 2);
+    this.wobbleSpeed = rand(0.01, 0.03);
+    this.alpha = rand(0.15, 0.4);
+  }
+  update() {
+    this.y -= this.speed;
+    this.wobble += this.wobbleSpeed;
+    this.x += Math.sin(this.wobble) * 0.4;
+    if (this.y < -20) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200, 240, 255, ${this.alpha})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.x - this.r * 0.3, this.y - this.r * 0.3, this.r * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,0.25)`;
+    ctx.fill();
+  }
+}
+
+class Plankton {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = rand(0, W);
+    this.y = rand(0, H);
+    this.r = rand(0.5, 1.5);
+    this.alpha = rand(0.05, 0.2);
+    this.speedX = rand(-0.1, 0.1);
+    this.speedY = rand(-0.05, 0.05);
+    this.phase = rand(0, Math.PI * 2);
+  }
+  update() {
+    this.phase += 0.02;
+    this.x += this.speedX + Math.sin(this.phase) * 0.15;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180, 230, 200, ${this.alpha})`;
+    ctx.fill();
+  }
+}
+
+let bubbles = [];
+let planktons = [];
+function initParticles() {
+  bubbles = Array.from({ length: 30 }, () => {
+    const b = new Bubble();
+    b.y = rand(-H, H); return b;
+  });
+  planktons = Array.from({ length: 60 }, () => {
+    const p = new Plankton();
+    p.y = rand(0, H); return p;
+  });
+}
+
+// ─── Light Rays ───────────────────────────────────────────────────────────────
+let rays = [];
+function initRays() {
+  rays = Array.from({ length: 6 }, (_, i) => ({
+    x: W * 0.1 + (W * 0.8 * i / 5),
+    width: rand(40, 90),
+    alpha: rand(0.03, 0.08),
+    speed: rand(0.0003, 0.0007),
+    phase: rand(0, Math.PI * 2)
+  }));
+}
+
+// ─── Seaweed ─────────────────────────────────────────────────────────────────
+const seaweeds = [];
+function initSeaweed() {
+  seaweeds.length = 0;
+  const count = Math.floor(W / 100);
+  for (let i = 0; i < count; i++) {
+    seaweeds.push({
+      baseX: 40 + (W - 80) * (i / (count - 1)) + rand(-20, 20),
+      height: rand(80, 160),
+      segments: Math.floor(rand(6, 10)),
+      phase: rand(0, Math.PI * 2),
+      speed: rand(0.008, 0.015),
+      color: `hsl(${rand(100, 160)}, ${rand(50, 70)}%, ${rand(25, 40)}%)`,
+      width: rand(4, 8)
+    });
+  }
+}
+
+function drawSeaweed(sw, time) {
+  ctx.beginPath();
+  ctx.moveTo(sw.baseX, H);
+  let x = sw.baseX;
+  for (let i = 1; i <= sw.segments; i++) {
+    const t = i / sw.segments;
+    const wave = Math.sin(time * sw.speed + sw.phase + t * 3) * 15 * t;
+    x = sw.baseX + wave;
+    const y = H - t * sw.height;
+    ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = sw.color;
+  ctx.lineWidth = sw.width;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+// ─── Sand & Rocks ────────────────────────────────────────────────────────────
+function drawBackground() {
+  // Sandy bottom
+  const grad = ctx.createLinearGradient(0, H * 0.78, 0, H);
+  grad.addColorStop(0, 'rgba(180, 150, 90, 0)');
+  grad.addColorStop(0.3, 'rgba(160, 130, 80, 0.3)');
+  grad.addColorStop(1, 'rgba(140, 110, 60, 0.5)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H * 0.75, W, H * 0.25);
+
+  // Rocks
+  const rocks = [
+    { x: W * 0.08, w: 70, h: 30, col: '#4a3d2e' },
+    { x: W * 0.25, w: 50, h: 22, col: '#3d3325' },
+    { x: W * 0.7,  w: 90, h: 35, col: '#4a3d2e' },
+    { x: W * 0.85, w: 55, h: 25, col: '#3d3325' },
+  ];
+  rocks.forEach(r => {
+    ctx.beginPath();
+    ctx.ellipse(r.x, H - r.h / 2, r.w / 2, r.h / 2, 0, 0, Math.PI * 2);
+    ctx.fillStyle = r.col;
+    ctx.fill();
+  });
+
+  // Coral pieces
+  const corals = [
+    { x: W * 0.15, h: 40, col: '#e8705a' },
+    { x: W * 0.6,  h: 55, col: '#f4a460' },
+    { x: W * 0.9,  h: 35, col: '#e06080' },
+  ];
+  corals.forEach(c => {
+    ctx.beginPath();
+    ctx.moveTo(c.x - 12, H - 10);
+    ctx.quadraticCurveTo(c.x - 15, H - c.h, c.x, H - c.h - 10);
+    ctx.quadraticCurveTo(c.x + 15, H - c.h, c.x + 12, H - 10);
+    ctx.fillStyle = c.col;
+    ctx.fill();
+    // branches
+    for (let b = 1; b <= 3; b++) {
+      ctx.beginPath();
+      ctx.moveTo(c.x, H - c.h * b / 4);
+      ctx.quadraticCurveTo(c.x + 8 * b, H - c.h * b / 4 - 10, c.x + 5, H - c.h * (b + 1) / 4 - 5);
+      ctx.strokeStyle = c.col;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+  });
+}
+
+// ─── Fish ────────────────────────────────────────────────────────────────────
+const FISH_TYPES = [
+  { body: '#ff7043', fin: '#ff5722', stripe: '#fff3e0', pattern: 'clown' },   // 小丑魚
+  { body: '#42a5f5', fin: '#1e88e5', stripe: '#bbdefb', pattern: 'stripes' }, // 藍吊
+  { body: '#ffcc02', fin: '#ff9800', stripe: '#fff8e1', pattern: 'angel' },   // 神仙魚
+  { body: '#66bb6a', fin: '#43a047', stripe: '#c8e6c9', pattern: 'parrot' },  // 綠鸚鵡
+  { body: '#ab47bc', fin: '#8e24aa', stripe: '#f3e5f5', pattern: 'goby' },     // 紫準
+  { body: '#ef5350', fin: '#e53935', stripe: '#ffcdd2', pattern: 'lionfish' }, // 獅子魚
+];
+
+class Fish {
+  constructor(x, y, type) {
+    this.x = x ?? rand(50, W - 50);
+    this.y = y ?? rand(H * 0.15, H * 0.72);
+    this.type = type ?? FISH_TYPES[Math.floor(Math.random() * FISH_TYPES.length)];
+    this.size = rand(18, 30);
+    this.speed = rand(0.4, 1.0);
+    this.vx = (Math.random() > 0.5 ? 1 : -1) * this.speed;
+    this.vy = 0;
+    this.targetVy = 0;
+    this.turnTimer = rand(80, 200);
+    this.bobPhase = rand(0, Math.PI * 2);
+    this.tailPhase = rand(0, Math.PI * 2);
+    this.flip = this.vx < 0 ? -1 : 1;
+    this.id = Math.random();
+  }
+
+  update(time) {
+    this.turnTimer--;
+    this.bobPhase += 0.03;
+    this.tailPhase += 0.15;
+    if (this.turnTimer <= 0) {
+      this.targetVy = rand(-0.4, 0.4);
+      this.turnTimer = rand(80, 200);
+      if (Math.random() < 0.12) {
+        this.vx *= -1;
+        this.flip = this.vx < 0 ? -1 : 1;
+      }
+    }
+    this.vy = lerp(this.vy, this.targetVy, 0.02);
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Boundaries
+    if (this.x < -60) { this.x = W + 40; }
+    if (this.x > W + 60) { this.x = -40; }
+    if (this.y < H * 0.05) this.targetVy = Math.abs(this.targetVy);
+    if (this.y > H * 0.78) this.targetVy = -Math.abs(this.targetVy);
+  }
+
+  draw(time) {
+    const bob = Math.sin(this.bobPhase) * 2.5;
+    const tail = Math.sin(this.tailPhase) * 0.25;
+    const tailX = this.flip * (this.size * 0.85 + tail * 8);
+
+    ctx.save();
+    ctx.translate(this.x, this.y + bob);
+    ctx.scale(this.flip, 1);
+
+    const { body, fin, stripe } = this.type;
+
+    // Tail
+    ctx.beginPath();
+    ctx.moveTo(-this.size * 0.3, 0);
+    ctx.lineTo(tailX, -this.size * 0.35 + tail * 5);
+    ctx.lineTo(tailX, this.size * 0.35 + tail * 5);
+    ctx.closePath();
+    ctx.fillStyle = fin;
+    ctx.fill();
+
+    // Body
+    ctx.beginPath();
+    ctx.ellipse(0, 0, this.size * 0.6, this.size * 0.38, 0, 0, Math.PI * 2);
+    ctx.fillStyle = body;
+    ctx.fill();
+
+    // Dorsal fin
+    ctx.beginPath();
+    ctx.moveTo(-this.size * 0.1, -this.size * 0.32);
+    ctx.quadraticCurveTo(this.size * 0.1, -this.size * 0.6, this.size * 0.3, -this.size * 0.3);
+    ctx.lineTo(-this.size * 0.1, -this.size * 0.32);
+    ctx.fillStyle = fin;
+    ctx.fill();
+
+    // Bottom fin
+    ctx.beginPath();
+    ctx.moveTo(-this.size * 0.05, this.size * 0.32);
+    ctx.quadraticCurveTo(this.size * 0.1, this.size * 0.55, this.size * 0.25, this.size * 0.3);
+    ctx.lineTo(-this.size * 0.05, this.size * 0.32);
+    ctx.fillStyle = fin;
+    ctx.fill();
+
+    // Stripe
+    ctx.beginPath();
+    ctx.ellipse(this.size * 0.05, 0, this.size * 0.08, this.size * 0.3, 0, 0, Math.PI * 2);
+    ctx.fillStyle = stripe;
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Eye
+    ctx.beginPath();
+    ctx.arc(this.size * 0.32, -this.size * 0.05, this.size * 0.11, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.size * 0.34, -this.size * 0.05, this.size * 0.065, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.size * 0.355, -this.size * 0.08, this.size * 0.022, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// ─── Food Pellet ─────────────────────────────────────────────────────────────
+class Pellet {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vy = -1.5;
+    this.r = 4;
+    this.alpha = 1;
+    this.eaten = false;
+    this.eatenBy = null;
+  }
+  update() {
+    this.vy += 0.04;
+    this.y += this.vy;
+    this.x += Math.sin(this.y * 0.05) * 0.3;
+    if (this.y > H - 20) {
+      this.alpha -= 0.03;
+      if (this.alpha <= 0) this.eaten = true;
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220, 180, 80, ${this.alpha})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 230, 150, ${this.alpha})`;
+    ctx.fill();
+  }
+}
+
+// ─── Scene State ─────────────────────────────────────────────────────────────
+let fishes = [];
+let pellets = [];
+let time = 0;
+
+function initScene() {
+  fishes = Array.from({ length: 7 }, () => new Fish());
+  initParticles();
+  initRays();
+  initSeaweed();
+}
+
+// ─── Feed Interaction ────────────────────────────────────────────────────────
+document.getElementById('aquarium').addEventListener('click', (e) => {
+  if (e.target.tagName === 'BUTTON') return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  for (let i = 0; i < 5; i++) {
+    pellets.push(new Pellet(x + rand(-15, 15), y));
+  }
+});
+
+document.getElementById('btnFeed').addEventListener('click', () => {
+  for (let i = 0; i < 8; i++) {
+    pellets.push(new Pellet(rand(W * 0.2, W * 0.8), rand(H * 0.1, H * 0.4)));
+  }
+});
+
+document.getElementById('btnMoreFish').addEventListener('click', () => {
+  const newFish = new Fish(W / 2, H * 0.4);
+  fishes.push(newFish);
+});
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  pellets.push(new Pellet(mx, my));
+});
+
+// ─── Draw Light Rays ─────────────────────────────────────────────────────────
+function drawRays() {
+  rays.forEach(r => {
+    r.phase += r.speed;
+    const drift = Math.sin(r.phase) * 30;
+    const grad = ctx.createLinearGradient(r.x + drift, 0, r.x + drift + r.width, H * 0.6);
+    grad.addColorStop(0, `rgba(150, 220, 255, ${r.alpha})`);
+    grad.addColorStop(1, 'rgba(150, 220, 255, 0)');
+    ctx.beginPath();
+    ctx.moveTo(r.x + drift, 0);
+    ctx.lineTo(r.x + drift + r.width * 1.5, H * 0.6);
+    ctx.lineTo(r.x + drift + r.width * 1.5 + 20, H * 0.6);
+    ctx.lineTo(r.x + drift + 20, 0);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  });
+}
+
+// ─── Main Loop ───────────────────────────────────────────────────────────────
+function loop() {
+  time++;
+  ctx.clearRect(0, 0, W, H);
+
+  // Light rays
+  drawRays();
+
+  // Plankton (behind fish)
+  planktons.forEach(p => { p.update(); p.draw(); });
+
+  // Bubbles
+  bubbles.forEach(b => { b.update(); b.draw(); });
+
+  // Seaweed
+  seaweeds.forEach(sw => drawSeaweed(sw, time));
+
+  // Background decor
+  drawBackground();
+
+  // Pellets
+  pellets.forEach(p => { p.update(); p.draw(); });
+  pellets = pellets.filter(p => !p.eaten);
+
+  // Fish
+  fishes.forEach(f => { f.update(time); f.draw(time); });
+}
+
+// ─── Boot ────────────────────────────────────────────────────────────────────
+initScene();
+setInterval(loop, 1000 / 60);
+</script>
+</body>
+</html>
