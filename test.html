@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test</title>
+</head>
+<body style="background:#0a1628;margin:0">
+<canvas id="c" style="width:100vw;height:100vh"></canvas>
+<script>
+const c=document.getElementById('c'), X=c.getContext('2d');
+c.width=innerWidth; c.height=innerHeight;
+let t=0;
+function loop(){
+  requestAnimationFrame(loop);
+  t++;
+  X.clearRect(0,0,c.width,c.height);
+  X.fillStyle='#0d4f7a';
+  X.fillRect(0,0,c.width,c.height*0.4);
+  X.fillStyle='#061a30';
+  X.fillRect(0,c.height*0.4,c.width,c.height*0.6);
+  // Draw fish
+  X.fillStyle='orange';
+  X.beginPath();
+  X.ellipse(200+t%400,200,30,20,0,0,Math.PI*2);
+  X.fill();
+}
+loop();
+</script>
+</body>
+</html>
