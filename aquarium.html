@@ -25,7 +25,7 @@ canvas{display:block;width:100vw;height:100vh}
 // ─── Canvas Setup ────────────────────────────────────────────────────────────
 const C=document.getElementById('c'), X=C.getContext('2d');
 let W,H;
-function resize(){W=C.width=innerWidth*devicePixelRatio; H=C.height=innerHeight*devicePixelRatio; C.style.width=W+'px'; C.style.height=H+'px';}
+function resize(){const dpr=devicePixelRatio||1; W=Math.round(innerWidth*dpr); H=Math.round(innerHeight*dpr); C.width=W; C.height=H; C.style.width=innerWidth+'px'; C.style.height=innerHeight+'px';}
 resize();
 window.addEventListener('resize',resize);
 
@@ -239,7 +239,7 @@ function scatterPellets(x,y,n=8){
   fishes.forEach(f=>{const d=Math.hypot(f.x-x,f.y-y);if(d<nd){nd=d;nearest=f;}});
   if(nearest&&nd<350){nearest.eating=true;nearest.eatTarget=pellets[pellets.length-1];}
 }
-document.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')scatterPellets(e.clientX*devicePixelRatio,e.clientY*devicePixelRatio);});
+document.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')scatterPellets(e.clientX,e.clientY);});
 document.getElementById('btnFeed').onclick=()=>scatterPellets(rand(W*0.2,W*0.8),rand(H*0.1,H*0.5),12);
 document.getElementById('btnAddFish').onclick=()=>fishes.push(new Fish());
 
