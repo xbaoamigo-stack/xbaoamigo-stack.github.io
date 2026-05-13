@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龍蝦投資系統 🦞</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        .quote {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-style: italic;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .nav-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .nav-card:active {
+            transform: scale(0.95);
+        }
+        .nav-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .nav-card h3 {
+            font-size: 1rem;
+        }
+        .nav-card.full {
+            grid-column: 1 / -1;
+        }
+        .nav-card.alert {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+        }
+        .nav-card.diary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .stock-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+        .stock-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .stock-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        .stock-price.down {
+            color: #f44336;
+        }
+        .stock-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .stock-info div {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .stock-info label {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        .recommendation {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .recommendation.buy {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        .recommendation.wait {
+            background: #fff3e0;
+            color: #FF9800;
+        }
+        .recommendation.sell {
+            background: #ffebee;
+            color: #f44336;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .result.success { background: #e8f5e9; color: #4CAF50; }
+        .result.warning { background: #fff3e0; color: #FF9800; }
+        .result.danger { background: #ffebee; color: #f44336; }
+        .alert-item {
+            background: #fff3e0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .alert-item h4 {
+            color: #FF9800;
+            margin-bottom: 8px;
+        }
+        .diary-entry {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .diary-entry .date {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .diary-entry .stock {
+            font-weight: 700;
+            color: #667eea;
+        }
+        .diary-entry .action {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        .diary-entry .action.buy {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        .diary-entry .action.sell {
+            background: #ffebee;
+            color: #f44336;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .loading .spinner {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦞 龍蝦投資系統</h1>
+        <p class="subtitle">小蝦米 × 胡總裁 專屬系統</p>
+        
+        <div class="quote">
+            "龍蝦心法：先知道會賠多少，再想賺多少"
+        </div>
+
+        <!-- 主選單 -->
+        <div id="menu" class="section active">
+            <div class="nav-grid">
+                <div class="nav-card full" onclick="showSection('portfolio')">
+                    <div class="icon">📊</div>
+                    <h3>持股分析儀表板</h3>
+                </div>
+                <div class="nav-card" onclick="showSection('stock-query')">
+                    <div class="icon">🔍</div>
+                    <h3>股價查詢</h3>
+                </div>
+                <div class="nav-card alert" onclick="showSection('alerts')">
+                    <div class="icon">🔔</div>
+                    <h3>價格提醒</h3>
+                </div>
+                <div class="nav-card" onclick="showSection('scanner')">
+                    <div class="icon">📈</div>
+                    <h3>型態掃描</h3>
+                </div>
+                <div class="nav-card diary" onclick="showSection('diary')">
+                    <div class="icon">📝</div>
+                    <h3>投資日記</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 持股分析 -->
+        <div id="portfolio" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← 返回主選單</button>
+            <h2 style="color:#667eea;margin-bottom:20px;">📊 持股分析儀表板</h2>
+            <div id="portfolio-content">
+                <div class="loading">
+                    <div class="spinner">🦞</div>
+                    <p>正在分析您的持股...</p>
+                </div>
+            </div>
+            <button class="btn" onclick="refreshPortfolio()" style="margin-top:20px;">🔄 重新整理</button>
+        </div>
+
+        <!-- 股價查詢 -->
+        <div id="stock-query" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← 返回主選單</button>
+            <h2 style="color:#667eea;margin-bottom:20px;">🔍 股價查詢</h2>
+            <div class="form-group">
+                <label>股票代號</label>
+                <input type="text" id="stock-code" placeholder="例：2330">
+            </div>
+            <button class="btn" onclick="queryStock()">查詢</button>
+            <div id="stock-result" style="margin-top:20px;"></div>
+        </div>
+
+        <!-- 價格提醒 -->
+        <div id="alerts" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← 返回主選單</button>
+            <h2 style="color:#FF6B35;margin-bottom:20px;">🔔 價格提醒</h2>
+            <div class="form-group">
+                <label>股票代號</label>
+                <input type="text" id="alert-stock" placeholder="例：2330">
+            </div>
+            <div class="form-group">
+                <label>目標價格</label>
+                <input type="number" id="alert-price" placeholder="例：2050" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>提醒條件</label>
+                <select id="alert-condition">
+                    <option value="above">高於目標價</option>
+                    <option value="below">低於目標價</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addAlert()">新增提醒</button>
+            <div id="alerts-list" style="margin-top:20px;"></div>
+        </div>
+
+        <!-- 型態掃描 -->
+        <div id="scanner" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← 返回主選單</button>
+            <h2 style="color:#667eea;margin-bottom:20px;">📈 型態掃描器</h2>
+            <div class="form-group">
+                <label>選擇型態</label>
+                <select id="scanner-pattern">
+                    <option value="w-bottom">W 底（雙重底）</option>
+                    <option value="head-shoulders">頭肩底</option>
+                    <option value="breakout">突破頸線</option>
+                    <option value="fake-breakdown">破底翻</option>
+                </select>
+            </div>
+            <button class="btn" onclick="runScanner()">開始掃描</button>
+            <div id="scanner-result" style="margin-top:20px;"></div>
+        </div>
+
+        <!-- 投資日記 -->
+        <div id="diary" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← 返回主選單</button>
+            <h2 style="color:#4CAF50;margin-bottom:20px;">📝 投資日記</h2>
+            <div class="form-group">
+                <label>股票代號</label>
+                <input type="text" id="diary-stock" placeholder="例：2330">
+            </div>
+            <div class="form-group">
+                <label>操作</label>
+                <select id="diary-action">
+                    <option value="buy">買進</option>
+                    <option value="sell">賣出</option>
+                    <option value="watch">觀望</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>價格</label>
+                <input type="number" id="diary-price" placeholder="例：2100" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>備註</label>
+                <input type="text" id="diary-note" placeholder="例：W 底突破，量增">
+            </div>
+            <button class="btn" onclick="addDiary()">記錄</button>
+            <div id="diary-list" style="margin-top:20px;"></div>
+        </div>
+
+        <div class="footer">
+            🦞 龍蝦虛擬員工系統 | 小蝦米製作<br>
+            胡總裁專屬投資分析工具 | 投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        // 預設持股（胡總裁的持股）
+        const defaultPortfolio = [
+            { code: '2330', name: '台積電', shares: 1000, avgCost: 2000 },
+            { code: '2454', name: '聯發科', shares: 200, avgCost: 3500 },
+            { code: '0050', name: '元大台灣 50', shares: 5000, avgCost: 90 },
+            { code: '00878', name: '國泰永續高股息', shares: 10000, avgCost: 27 },
+            { code: '00919', name: '群益台灣精選高息', shares: 10000, avgCost: 24 }
+        ];
+
+        // 頁面切換
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            if (sectionId === 'portfolio') {
+                loadPortfolio();
+            } else if (sectionId === 'alerts') {
+                loadAlerts();
+            } else if (sectionId === 'diary') {
+                loadDiary();
+            }
+        }
+
+        // 載入持股分析
+        function loadPortfolio() {
+            const content = document.getElementById('portfolio-content');
+            const portfolio = JSON.parse(localStorage.getItem('lobster_portfolio')) || defaultPortfolio;
+            
+            let html = '';
+            portfolio.forEach(stock => {
+                const analysis = analyzeStock(stock);
+                html += `
+                    <div class="stock-card">
+                        <h3>${stock.name} (${stock.code})</h3>
+                        <div class="stock-price ${analysis.trend === 'up' ? '' : 'down'}">
+                            ${analysis.currentPrice.toLocaleString()} 元
+                            ${analysis.change > 0 ? '▲' : '▼'} ${Math.abs(analyst.change).toFixed(2)}%
+                        </div>
+                        <div class="stock-info">
+                            <div>
+                                <label>持股數</label>
+                                <div>${stock.shares.toLocaleString()} 股</div>
+                            </div>
+                            <div>
+                                <label>平均成本</label>
+                                <div>${stock.avgCost.toLocaleString()} 元</div>
+                            </div>
+                            <div>
+                                <label>目前損益</label>
+                                <div style="color:${analysis.profit >= 0 ? '#4CAF50' : '#f44336'}">
+                                    ${analysis.profit >= 0 ? '+' : ''}${analysis.profit.toLocaleString()} 元
+                                </div>
+                            </div>
+                            <div>
+                                <label>技術型態</label>
+                                <div>${analysis.pattern}</div>
+                            </div>
+                        </div>
+                        <div class="recommendation ${analysis.recommendation.class}">
+                            ${analysis.recommendation.icon} ${analysis.recommendation.text}
+                        </div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        }
+
+        // 分析股票（模擬數據）
+        function analyzeStock(stock) {
+            // 模擬股價數據（實際應接 API）
+            const mockPrices = {
+                '2330': { price: 2215, change: 1.77 },
+                '2454': { price: 3680, change: 0.54 },
+                '0050': { price: 95.15, change: 1.76 },
+                '00878': { price: 27.88, change: 0.89 },
+                '00919': { price: 25.40, change: 1.28 }
+            };
+            
+            const data = mockPrices[stock.code] || { price: stock.avgCost, change: 0 };
+            const currentPrice = data.price;
+            const profit = (currentPrice - stock.avgCost) * stock.shares;
+            
+            // 龍蝦技術分析建議
+            let recommendation;
+            if (currentPrice > stock.avgCost * 1.1) {
+                recommendation = { class: 'sell', icon: '⚠️', text: '考慮部分停利' };
+            } else if (currentPrice < stock.avgCost * 0.95) {
+                recommendation = { class: 'buy', icon: '✅', text: '可加碼' };
+            } else {
+                recommendation = { class: 'wait', icon: '⏳', text: '持續觀望' };
+            }
+            
+            return {
+                currentPrice,
+                change: data.change,
+                trend: data.change >= 0 ? 'up' : 'down',
+                profit,
+                pattern: '多頭整理',
+                recommendation
+            };
+        }
+
+        function refreshPortfolio() {
+            loadPortfolio();
+        }
+
+        // 股價查詢
+        function queryStock() {
+            const code = document.getElementById('stock-code').value;
+            const result = document.getElementById('stock-result');
+            
+            if (!code) {
+                result.innerHTML = '<div class="result danger">⚠️ 請輸入股票代號</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="loading"><div class="spinner">🦞</div><p>查詢中...</p></div>';
+            
+            // 模擬查詢（實際應接 API）
+            setTimeout(() => {
+                result.innerHTML = `
+                    <div class="stock-card">
+                        <h3>${code} 查詢結果</h3>
+                        <div class="stock-price">2,215 元 ▲ 1.77%</div>
+                        <div class="result warning">⚠️ 高檔震盪，建議等待回測</div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 價格提醒
+        function addAlert() {
+            const stock = document.getElementById('alert-stock').value;
+            const price = document.getElementById('alert-price').value;
+            const condition = document.getElementById('alert-condition').value;
+            
+            if (!stock || !price) {
+                alert('請填寫完整資訊');
+                return;
+            }
+            
+            const alerts = JSON.parse(localStorage.getItem('lobster_alerts')) || [];
+            alerts.push({
+                id: Date.now(),
+                stock,
+                price: parseFloat(price),
+                condition,
+                created: new Date().toISOString()
+            });
+            localStorage.setItem('lobster_alerts', JSON.stringify(alerts));
+            
+            alert('✅ 提醒已新增');
+            loadAlerts();
+        }
+
+        function loadAlerts() {
+            const alerts = JSON.parse(localStorage.getItem('lobster_alerts')) || [];
+            const list = document.getElementById('alerts-list');
+            
+            if (alerts.length === 0) {
+                list.innerHTML = '<div class="result">📭 尚無提醒</div>';
+                return;
+            }
+            
+            list.innerHTML = alerts.map(alert => `
+                <div class="alert-item">
+                    <h4>${alert.stock} ${alert.condition === 'above' ? '>' : '<'} ${alert.price} 元</h4>
+                    <p>設定時間：${new Date(alert.created).toLocaleString('zh-TW')}</p>
+                </div>
+            `).join('');
+        }
+
+        // 型態掃描
+        function runScanner() {
+            const pattern = document.getElementById('scanner-pattern').value;
+            const result = document.getElementById('scanner-result');
+            
+            result.innerHTML = '<div class="loading"><div class="spinner">🦞</div><p>掃描中...</p></div>';
+            
+            // 模擬掃描結果
+            setTimeout(() => {
+                const mockResults = [
+                    { code: '2330', name: '台積電', pattern: 'W 底', confidence: '高' },
+                    { code: '2454', name: '聯發科', pattern: '突破頸線', confidence: '中' },
+                    { code: '0050', name: '元大台灣 50', pattern: '多頭整理', confidence: '高' }
+                ];
+                
+                result.innerHTML = mockResults.map(r => `
+                    <div class="stock-card">
+                        <h3>${r.name} (${r.code})</h3>
+                        <p>型態：${r.pattern}</p>
+                        <p>信心度：${r.confidence}</p>
+                        <div class="recommendation buy">✅ 符合條件</div>
+                    </div>
+                `).join('');
+            }, 1500);
+        }
+
+        // 投資日記
+        function addDiary() {
+            const stock = document.getElementById('diary-stock').value;
+            const action = document.getElementById('diary-action').value;
+            const price = document.getElementById('diary-price').value;
+            const note = document.getElementById('diary-note').value;
+            
+            if (!stock || !price) {
+                alert('請填寫完整資訊');
+                return;
+            }
+            
+            const diary = JSON.parse(localStorage.getItem('lobster_diary')) || [];
+            diary.unshift({
+                id: Date.now(),
+                stock,
+                action,
+                price: parseFloat(price),
+                note,
+                created: new Date().toISOString()
+            });
+            localStorage.setItem('lobster_diary', JSON.stringify(diary));
+            
+            alert('✅ 已記錄');
+            loadDiary();
+        }
+
+        function loadDiary() {
+            const diary = JSON.parse(localStorage.getItem('lobster_diary')) || [];
+            const list = document.getElementById('diary-list');
+            
+            if (diary.length === 0) {
+                list.innerHTML = '<div class="result">📭 尚無記錄</div>';
+                return;
+            }
+            
+            list.innerHTML = diary.map(entry => `
+                <div class="diary-entry">
+                    <div class="date">${new Date(entry.created).toLocaleString('zh-TW')}</div>
+                    <div>
+                        <span class="stock">${entry.stock}</span>
+                        <span class="action ${entry.action}">${entry.action === 'buy' ? '買進' : entry.action === 'sell' ? '賣出' : '觀望'}</span>
+                    </div>
+                    <div style="margin-top:8px;">價格：${entry.price} 元</div>
+                    ${entry.note ? `<div style="margin-top:8px;color:#666;">${entry.note}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 初始化
+        console.log('🦞 龍蝦投資系統已載入');
+    </script>
+</body>
+</html>
