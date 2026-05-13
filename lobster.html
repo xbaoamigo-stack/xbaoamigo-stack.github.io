@@ -387,6 +387,10 @@
     </div>
 
     <script>
+        // API 伺服器位址
+        const API_BASE = 'http://localhost:3456/api'; // 本機測試
+        // const API_BASE = 'https://your-server.com/api'; // 上線用
+        
         // 預設持股（胡總裁的持股）
         const defaultPortfolio = [
             { code: '2330', name: '台積電', shares: 1000, avgCost: 2000 },
@@ -411,47 +415,62 @@
         }
 
         // 載入持股分析
-        function loadPortfolio() {
+        async function loadPortfolio() {
             const content = document.getElementById('portfolio-content');
-            const portfolio = JSON.parse(localStorage.getItem('lobster_portfolio')) || defaultPortfolio;
             
-            let html = '';
-            portfolio.forEach(stock => {
-                const analysis = analyzeStock(stock);
-                html += `
-                    <div class="stock-card">
-                        <h3>${stock.name} (${stock.code})</h3>
-                        <div class="stock-price ${analysis.trend === 'up' ? '' : 'down'}">
-                            ${analysis.currentPrice.toLocaleString()} 元
-                            ${analysis.change > 0 ? '▲' : '▼'} ${Math.abs(analyst.change).toFixed(2)}%
-                        </div>
-                        <div class="stock-info">
-                            <div>
-                                <label>持股數</label>
-                                <div>${stock.shares.toLocaleString()} 股</div>
+            try {
+                // 呼叫真實 API
+                const response = await fetch(`${API_BASE}/portfolio`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error('API 回應失敗');
+                }
+                
+                const stocks = result.data;
+                let html = '';
+                
+                stocks.forEach(stock => {
+                    const profit = (stock.price - defaultPortfolio.find(p => p.code === stock.code)?.avgCost || stock.price) * 1000;
+                    html += `
+                        <div class="stock-card">
+                            <h3>${stock.name} (${stock.code})</h3>
+                            <div class="stock-price ${stock.change >= 0 ? '' : 'down'}">
+                                ${stock.price.toLocaleString()} 元
+                                ${stock.change >= 0 ? '▲' : '▼'} ${Math.abs(stock.changePercent).toFixed(2)}%
                             </div>
-                            <div>
-                                <label>平均成本</label>
-                                <div>${stock.avgCost.toLocaleString()} 元</div>
-                            </div>
-                            <div>
-                                <label>目前損益</label>
-                                <div style="color:${analysis.profit >= 0 ? '#4CAF50' : '#f44336'}">
-                                    ${analysis.profit >= 0 ? '+' : ''}${analysis.profit.toLocaleString()} 元
+                            <div class="stock-info">
+                                <div>
+                                    <label>目前價</label>
+                                    <div>${stock.price.toLocaleString()} 元</div>
+                                </div>
+                                <div>
+                                    <label>漲跌</label>
+                                    <div style="color:${stock.change >= 0 ? '#4CAF50' : '#f44336'}">
+                                        ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>技術型態</label>
+                                    <div>${stock.analysis.pattern}</div>
+                                </div>
+                                <div>
+                                    <label>信心度</label>
+                                    <div>${stock.analysis.confidence}</div>
                                 </div>
                             </div>
-                            <div>
-                                <label>技術型態</label>
-                                <div>${analysis.pattern}</div>
+                            <div class="recommendation ${stock.analysis.recommendation === 'buy' ? 'buy' : stock.analysis.recommendation === 'sell' ? 'sell' : 'wait'}">
+                                ${stock.analysis.recommendation === 'buy' ? '✅' : stock.analysis.recommendation === 'sell' ? '⚠️' : '⏳'} 
+                                ${stock.analysis.recommendation === 'buy' ? '建議買進' : stock.analysis.recommendation === 'sell' ? '考慮停利' : '持續觀望'}
                             </div>
                         </div>
-                        <div class="recommendation ${analysis.recommendation.class}">
-                            ${analysis.recommendation.icon} ${analysis.recommendation.text}
-                        </div>
-                    </div>
-                `;
-            });
-            content.innerHTML = html;
+                    `;
+                });
+                content.innerHTML = html;
+            } catch (error) {
+                console.error('載入持股失敗:', error);
+                content.innerHTML = '<div class="result danger">⚠️ 無法連接 API 伺服器，請確認 npm start 已執行</div>';
+            }
         }
 
         // 分析股票（模擬數據）
@@ -494,7 +513,7 @@
         }
 
         // 股價查詢
-        function queryStock() {
+        async function queryStock() {
             const code = document.getElementById('stock-code').value;
             const result = document.getElementById('stock-result');
             
@@ -505,20 +524,40 @@
             
             result.innerHTML = '<div class="loading"><div class="spinner">🦞</div><p>查詢中...</p></div>';
             
-            // 模擬查詢（實際應接 API）
-            setTimeout(() => {
-                result.innerHTML = `
-                    <div class="stock-card">
-                        <h3>${code} 查詢結果</h3>
-                        <div class="stock-price">2,215 元 ▲ 1.77%</div>
-                        <div class="result warning">⚠️ 高檔震盪，建議等待回測</div>
-                    </div>
-                `;
-            }, 1000);
+            try {
+                const response = await fetch(`${API_BASE}/stock/${code}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stock = data.data;
+                    result.innerHTML = `
+                        <div class="stock-card">
+                            <h3>${stock.name || code} (${code})</h3>
+                            <div class="stock-price ${stock.change >= 0 ? '' : 'down'}">
+                                ${stock.price.toLocaleString()} 元
+                                ${stock.change >= 0 ? '▲' : '▼'} ${Math.abs(stock.changePercent).toFixed(2)}%
+                            </div>
+                            <div class="stock-info">
+                                <div><label>前收</label><div>${stock.previousClose} 元</div></div>
+                                <div><label>高</label><div>${stock.high} 元</div></div>
+                                <div><label>低</label><div>${stock.low} 元</div></div>
+                                <div><label>型態</label><div>${stock.analysis.pattern}</div></div>
+                            </div>
+                            <div class="recommendation ${stock.analysis.recommendation === 'buy' ? 'buy' : stock.analysis.recommendation === 'sell' ? 'sell' : 'wait'}">
+                                ${stock.analysis.recommendation === 'buy' ? '✅ 建議買進' : stock.analysis.recommendation === 'sell' ? '⚠️ 考慮停利' : '⏳ 持續觀望'}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = '<div class="result danger">⚠️ 查詢失敗</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="result danger">⚠️ 無法連接 API 伺服器</div>';
+            }
         }
 
         // 價格提醒
-        function addAlert() {
+        async function addAlert() {
             const stock = document.getElementById('alert-stock').value;
             const price = document.getElementById('alert-price').value;
             const condition = document.getElementById('alert-condition').value;
@@ -528,65 +567,81 @@
                 return;
             }
             
-            const alerts = JSON.parse(localStorage.getItem('lobster_alerts')) || [];
-            alerts.push({
-                id: Date.now(),
-                stock,
-                price: parseFloat(price),
-                condition,
-                created: new Date().toISOString()
-            });
-            localStorage.setItem('lobster_alerts', JSON.stringify(alerts));
-            
-            alert('✅ 提醒已新增');
-            loadAlerts();
+            try {
+                const response = await fetch(`${API_BASE}/alerts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock, price, condition, name: stock })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 提醒已新增，Telegram 將發送通知');
+                    loadAlerts();
+                } else {
+                    alert('❌ 新增失敗');
+                }
+            } catch (error) {
+                alert('⚠️ 無法連接 API 伺服器');
+            }
         }
 
-        function loadAlerts() {
-            const alerts = JSON.parse(localStorage.getItem('lobster_alerts')) || [];
-            const list = document.getElementById('alerts-list');
-            
-            if (alerts.length === 0) {
-                list.innerHTML = '<div class="result">📭 尚無提醒</div>';
-                return;
+        async function loadAlerts() {
+            try {
+                const response = await fetch(`${API_BASE}/alerts`);
+                const result = await response.json();
+                const alerts = result.data || [];
+                const list = document.getElementById('alerts-list');
+                
+                if (alerts.length === 0) {
+                    list.innerHTML = '<div class="result">📭 尚無提醒</div>';
+                    return;
+                }
+                
+                list.innerHTML = alerts.map(alert => `
+                    <div class="alert-item">
+                        <h4>${alert.stock} ${alert.condition === 'above' ? '>' : '<'} ${alert.price} 元</h4>
+                        <p>設定時間：${new Date(alert.created).toLocaleString('zh-TW')}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('載入提醒失敗:', error);
             }
-            
-            list.innerHTML = alerts.map(alert => `
-                <div class="alert-item">
-                    <h4>${alert.stock} ${alert.condition === 'above' ? '>' : '<'} ${alert.price} 元</h4>
-                    <p>設定時間：${new Date(alert.created).toLocaleString('zh-TW')}</p>
-                </div>
-            `).join('');
         }
 
         // 型態掃描
-        function runScanner() {
+        async function runScanner() {
             const pattern = document.getElementById('scanner-pattern').value;
             const result = document.getElementById('scanner-result');
             
             result.innerHTML = '<div class="loading"><div class="spinner">🦞</div><p>掃描中...</p></div>';
             
-            // 模擬掃描結果
-            setTimeout(() => {
-                const mockResults = [
-                    { code: '2330', name: '台積電', pattern: 'W 底', confidence: '高' },
-                    { code: '2454', name: '聯發科', pattern: '突破頸線', confidence: '中' },
-                    { code: '0050', name: '元大台灣 50', pattern: '多頭整理', confidence: '高' }
-                ];
+            try {
+                const response = await fetch(`${API_BASE}/scanner?pattern=${pattern}`);
+                const data = await response.json();
                 
-                result.innerHTML = mockResults.map(r => `
-                    <div class="stock-card">
-                        <h3>${r.name} (${r.code})</h3>
-                        <p>型態：${r.pattern}</p>
-                        <p>信心度：${r.confidence}</p>
-                        <div class="recommendation buy">✅ 符合條件</div>
-                    </div>
-                `).join('');
-            }, 1500);
+                if (data.success && data.data.length > 0) {
+                    result.innerHTML = data.data.map(r => `
+                        <div class="stock-card">
+                            <h3>${r.name} (${r.code})</h3>
+                            <p>型態：${r.analysis.pattern}</p>
+                            <p>信心度：${r.analysis.confidence}</p>
+                            <div class="recommendation ${r.analysis.recommendation === 'buy' ? 'buy' : 'wait'}">
+                                ${r.analysis.recommendation === 'buy' ? '✅' : '⏳'} 
+                                ${r.analysis.recommendation === 'buy' ? '符合條件' : '持續觀察'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    result.innerHTML = '<div class="result warning">⚠️ 未找到符合型態的股票</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="result danger">⚠️ 無法連接 API 伺服器</div>';
+            }
         }
 
         // 投資日記
-        function addDiary() {
+        async function addDiary() {
             const stock = document.getElementById('diary-stock').value;
             const action = document.getElementById('diary-action').value;
             const price = document.getElementById('diary-price').value;
@@ -597,41 +652,51 @@
                 return;
             }
             
-            const diary = JSON.parse(localStorage.getItem('lobster_diary')) || [];
-            diary.unshift({
-                id: Date.now(),
-                stock,
-                action,
-                price: parseFloat(price),
-                note,
-                created: new Date().toISOString()
-            });
-            localStorage.setItem('lobster_diary', JSON.stringify(diary));
-            
-            alert('✅ 已記錄');
-            loadDiary();
+            try {
+                const response = await fetch(`${API_BASE}/diary`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock, action, price, note })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 已記錄');
+                    loadDiary();
+                } else {
+                    alert('❌ 記錄失敗');
+                }
+            } catch (error) {
+                alert('⚠️ 無法連接 API 伺服器');
+            }
         }
 
-        function loadDiary() {
-            const diary = JSON.parse(localStorage.getItem('lobster_diary')) || [];
-            const list = document.getElementById('diary-list');
-            
-            if (diary.length === 0) {
-                list.innerHTML = '<div class="result">📭 尚無記錄</div>';
-                return;
-            }
-            
-            list.innerHTML = diary.map(entry => `
-                <div class="diary-entry">
-                    <div class="date">${new Date(entry.created).toLocaleString('zh-TW')}</div>
-                    <div>
-                        <span class="stock">${entry.stock}</span>
-                        <span class="action ${entry.action}">${entry.action === 'buy' ? '買進' : entry.action === 'sell' ? '賣出' : '觀望'}</span>
+        async function loadDiary() {
+            try {
+                const response = await fetch(`${API_BASE}/diary`);
+                const result = await response.json();
+                const diary = result.data || [];
+                const list = document.getElementById('diary-list');
+                
+                if (diary.length === 0) {
+                    list.innerHTML = '<div class="result">📭 尚無記錄</div>';
+                    return;
+                }
+                
+                list.innerHTML = diary.map(entry => `
+                    <div class="diary-entry">
+                        <div class="date">${new Date(entry.created).toLocaleString('zh-TW')}</div>
+                        <div>
+                            <span class="stock">${entry.stock}</span>
+                            <span class="action ${entry.action}">${entry.action === 'buy' ? '買進' : entry.action === 'sell' ? '賣出' : '觀望'}</span>
+                        </div>
+                        <div style="margin-top:8px;">價格：${entry.price} 元</div>
+                        ${entry.note ? `<div style="margin-top:8px;color:#666;">${entry.note}</div>` : ''}
                     </div>
-                    <div style="margin-top:8px;">價格：${entry.price} 元</div>
-                    ${entry.note ? `<div style="margin-top:8px;color:#666;">${entry.note}</div>` : ''}
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('載入日記失敗:', error);
+            }
         }
 
         // 初始化
