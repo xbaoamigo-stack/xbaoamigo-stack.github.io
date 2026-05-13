@@ -255,26 +255,26 @@
     <script>
         const API_BASE = 'http://localhost:3456/api';
         
-        // 胡總裁的持股清單（含持股數和成本）
+        // 胡總裁的真實持股清單（根據截圖更新 2026-05-13）
         const PORTFOLIO = [
-            { code: '2330', name: '台積電', shares: 1000, avgCost: 2000 },
-            { code: '2454', name: '聯發科', shares: 200, avgCost: 3500 },
-            { code: '0050', name: '元大台灣 50', shares: 5000, avgCost: 90 },
-            { code: '00878', name: '國泰永續高股息', shares: 10000, avgCost: 27 },
-            { code: '00919', name: '群益台灣精選高息', shares: 10000, avgCost: 24 },
-            { code: '2317', name: '鴻海', shares: 1000, avgCost: 200 },
-            { code: '2303', name: '聯電', shares: 2000, avgCost: 95 }
+            { code: '0050', name: '元大台灣 50', shares: 2271, avgCost: 75.09 },
+            { code: '00878', name: '國泰永續高股息', shares: 4545, avgCost: 20.85 },
+            { code: '00919', name: '群益台灣精選高息', shares: 2000, avgCost: 22.66 },
+            { code: '00981A', name: '主動統一台股增長', shares: 1000, avgCost: 28.26 },
+            { code: '2330', name: '台積電', shares: 50, avgCost: 2260.5 },
+            { code: '2454', name: '聯發科', shares: 6, avgCost: 3430 },
+            { code: '6859', name: '光聖', shares: 545, avgCost: 152.33 }
         ];
 
-        // 蔡森理論建議價位
+        // 蔡森理論建議價位（根據個股特性調整）
         const CAISEN_LEVELS = {
-            '2330': { buy: 2100, sell: 2400, stop: 2000, note: '回測頸線可加碼' },
-            '2454': { buy: 3300, sell: 4000, stop: 3200, note: '等待回測' },
             '0050': { buy: 90, sell: 100, stop: 87, note: '定期定額持續' },
             '00878': { buy: 26, sell: 30, stop: 25, note: '定期定額持續' },
             '00919': { buy: 24, sell: 28, stop: 23, note: '定期定額持續' },
-            '2317': { buy: 235, sell: 260, stop: 230, note: '突破 255 加碼' },
-            '2303': { buy: 90, sell: 105, stop: 88, note: '跟隨台積電' }
+            '00981A': { buy: 27, sell: 32, stop: 26, note: '新創基金，觀察走勢' },
+            '2330': { buy: 2100, sell: 2400, stop: 2000, note: '回測頸線可加碼' },
+            '2454': { buy: 3300, sell: 4000, stop: 3200, note: '等待回測' },
+            '6859': { buy: 1965, sell: 2270, stop: 1925, note: '等待回穩，目前套牢' }
         };
 
         async function loadPortfolio() {
