@@ -13,7 +13,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -107,23 +107,23 @@
         }
         .stock-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
             margin-bottom: 15px;
         }
         .stock-info {
             background: white;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 8px;
             text-align: center;
         }
         .stock-info .label {
             color: #999;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             margin-bottom: 5px;
         }
         .stock-info .value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #333;
         }
@@ -214,14 +214,15 @@
             font-size: 0.85rem;
             margin-top: 10px;
         }
-        .alert-badge {
-            display: inline-block;
-            background: #FF6B35;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            margin-left: 8px;
+        .update-notice {
+            background: #e8f5e9;
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -229,7 +230,11 @@
     <div class="container">
         <div class="header">
             <h1>🦞 胡總裁持股儀表板</h1>
-            <p class="subtitle">蔡森技術分析 | 即時監控股票</p>
+            <p class="subtitle">蔡森技術分析 | 即時監控股票 | 成本已更新</p>
+        </div>
+
+        <div class="update-notice">
+            ✅ 持股成本已更新（2026-05-13）| 根據您的真實持股明細
         </div>
 
         <div class="quote">
@@ -255,7 +260,7 @@
     <script>
         const API_BASE = 'http://localhost:3456/api';
         
-        // 胡總裁的真實持股清單（根據截圖更新 2026-05-13）
+        // 胡總裁的真實持股清單（2026-05-13 更新）
         const PORTFOLIO = [
             { code: '0050', name: '元大台灣 50', shares: 2271, avgCost: 75.09 },
             { code: '00878', name: '國泰永續高股息', shares: 4545, avgCost: 20.85 },
@@ -266,7 +271,7 @@
             { code: '6859', name: '光聖', shares: 545, avgCost: 152.33 }
         ];
 
-        // 蔡森理論建議價位（根據個股特性調整）
+        // 蔡森理論建議價位
         const CAISEN_LEVELS = {
             '0050': { buy: 90, sell: 100, stop: 87, note: '定期定額持續' },
             '00878': { buy: 26, sell: 30, stop: 25, note: '定期定額持續' },
@@ -274,7 +279,7 @@
             '00981A': { buy: 27, sell: 32, stop: 26, note: '新創基金，觀察走勢' },
             '2330': { buy: 2100, sell: 2400, stop: 2000, note: '回測頸線可加碼' },
             '2454': { buy: 3300, sell: 4000, stop: 3200, note: '等待回測' },
-            '6859': { buy: 1965, sell: 2270, stop: 1925, note: '等待回穩，目前套牢' }
+            '6859': { buy: 140, sell: 1965, stop: 110, note: '等待回穩，目前套牢' }
         };
 
         async function loadPortfolio() {
@@ -294,25 +299,32 @@
                     throw new Error('API 回應失敗');
                 }
 
-                const stocks = result.data;
-                const portfolioData = stocks.map(stock => {
-                    const portfolioItem = PORTFOLIO.find(p => p.code === stock.code);
-                    const shares = portfolioItem?.shares || 0;
-                    const avgCost = portfolioItem?.avgCost || stock.price;
-                    const marketValue = stock.price * shares;
-                    const costBasis = avgCost * shares;
+                const apiStocks = result.data;
+                
+                // 合併 API 股價和本地持股成本
+                const portfolioData = PORTFOLIO.map(stock => {
+                    const apiData = apiStocks.find(s => s.code === stock.code) || {};
+                    const currentPrice = apiData.price || 0;
+                    const change = apiData.change || 0;
+                    const changePercent = apiData.changePercent || 0;
+                    const analysis = apiData.analysis || { pattern: '未知', recommendation: 'wait', confidence: '低' };
+                    
+                    const marketValue = currentPrice * stock.shares;
+                    const costBasis = stock.avgCost * stock.shares;
                     const profit = marketValue - costBasis;
-                    const profitPercent = ((profit / costBasis) * 100);
+                    const profitPercent = costBasis > 0 ? ((profit / costBasis) * 100) : 0;
                     const caisenLevel = CAISEN_LEVELS[stock.code] || {};
 
                     return {
                         ...stock,
-                        shares,
-                        avgCost,
+                        currentPrice,
+                        change,
+                        changePercent,
                         marketValue,
                         costBasis,
                         profit,
                         profitPercent,
+                        analysis,
                         caisenLevel
                     };
                 });
@@ -321,7 +333,7 @@
                 const totalMarketValue = portfolioData.reduce((sum, s) => sum + s.marketValue, 0);
                 const totalCostBasis = portfolioData.reduce((sum, s) => sum + s.costBasis, 0);
                 const totalProfit = totalMarketValue - totalCostBasis;
-                const totalProfitPercent = ((totalProfit / totalCostBasis) * 100);
+                const totalProfitPercent = totalCostBasis > 0 ? ((totalProfit / totalCostBasis) * 100) : 0;
 
                 // 渲染儀表板
                 renderDashboard(portfolioData, {
@@ -384,8 +396,6 @@
             const profitClass = stock.profit >= 0 ? 'up' : 'down';
             const profitSign = stock.profit >= 0 ? '+' : '';
             const priceClass = stock.change >= 0 ? 'up' : 'down';
-
-            // 蔡森建議
             const recommendation = getRecommendation(stock);
 
             return `
@@ -398,7 +408,7 @@
                     <div class="stock-grid">
                         <div class="stock-info">
                             <div class="label">目前價</div>
-                            <div class="value">${stock.price.toLocaleString()}</div>
+                            <div class="value">${stock.currentPrice > 0 ? stock.currentPrice.toLocaleString() : '-'}</div>
                         </div>
                         <div class="stock-info">
                             <div class="label">漲跌</div>
@@ -407,7 +417,7 @@
                             </div>
                         </div>
                         <div class="stock-info">
-                            <div class="label">持股數</div>
+                            <div class="label">持股</div>
                             <div class="value">${stock.shares.toLocaleString()}</div>
                         </div>
                         <div class="stock-info">
@@ -442,24 +452,21 @@
         }
 
         function getRecommendation(stock) {
-            const currentPrice = stock.price;
+            const currentPrice = stock.currentPrice;
             const buyPrice = stock.caisenLevel.buy;
             const sellPrice = stock.caisenLevel.sell;
             
             let recClass, recText, recIcon;
             
-            if (currentPrice <= buyPrice * 1.05) {
-                // 接近加碼點
+            if (currentPrice <= buyPrice * 1.05 && currentPrice > 0) {
                 recClass = 'buy';
                 recIcon = '✅';
                 recText = '建議買進 - 接近加碼點';
-            } else if (currentPrice >= sellPrice * 0.95) {
-                // 接近停利點
+            } else if (currentPrice >= sellPrice * 0.95 && currentPrice > 0) {
                 recClass = 'sell';
                 recIcon = '⚠️';
                 recText = '考慮停利 - 接近目標價';
             } else {
-                // 中間區域
                 recClass = 'wait';
                 recIcon = '⏳';
                 recText = '持續觀望 - 等待突破或回測';
@@ -469,6 +476,7 @@
         }
 
         function formatCurrency(amount) {
+            if (!amount || isNaN(amount)) return 'NT$ 0';
             return 'NT$ ' + amount.toLocaleString('en-US', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
