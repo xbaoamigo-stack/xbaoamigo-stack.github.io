@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 胡總裁持股儀表板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .summary-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .summary-card .change {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        .summary-card .change.up { color: #a5f3b0; }
+        .summary-card .change.down { color: #ffadad; }
+        .stock-list {
+            margin-top: 20px;
+        }
+        .stock-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 6px solid #667eea;
+            transition: transform 0.3s;
+        }
+        .stock-card:hover {
+            transform: translateX(5px);
+        }
+        .stock-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .stock-card-header h3 {
+            color: #333;
+            font-size: 1.3rem;
+        }
+        .stock-card-header .code {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .stock-info {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stock-info .label {
+            color: #999;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        .stock-info .value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .stock-info .value.up { color: #4CAF50; }
+        .stock-info .value.down { color: #f44336; }
+        .recommendation {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .recommendation.buy {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        .recommendation.wait {
+            background: #fff3e0;
+            color: #FF9800;
+        }
+        .recommendation.sell {
+            background: #ffebee;
+            color: #f44336;
+        }
+        .refresh-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.3s;
+        }
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .loading .spinner {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .auto-refresh {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .alert-badge {
+            display: inline-block;
+            background: #FF6B35;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦞 胡總裁持股儀表板</h1>
+            <p class="subtitle">龍蝦投資系統 | 即時監控股票</p>
+        </div>
+
+        <div id="dashboard">
+            <div class="loading">
+                <div class="spinner">🦞</div>
+                <p>正在載入股價數據...</p>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="loadPortfolio()">🔄 立即更新</button>
+        <p class="auto-refresh">📡 每 30 秒自動更新</p>
+
+        <div class="footer">
+            🦞 龍蝦投資系統 | 胡總裁專屬<br>
+            數據來源：Yahoo Finance | 投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3456/api';
+        
+        // 胡總裁的持股清單（含持股數和成本）
+        const PORTFOLIO = [
+            { code: '2330', name: '台積電', shares: 1000, avgCost: 2000 },
+            { code: '2454', name: '聯發科', shares: 200, avgCost: 3500 },
+            { code: '0050', name: '元大台灣 50', shares: 5000, avgCost: 90 },
+            { code: '00878', name: '國泰永續高股息', shares: 10000, avgCost: 27 },
+            { code: '00919', name: '群益台灣精選高息', shares: 10000, avgCost: 24 },
+            { code: '2317', name: '鴻海', shares: 1000, avgCost: 200 },
+            { code: '2303', name: '聯電', shares: 2000, avgCost: 95 }
+        ];
+
+        async function loadPortfolio() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = `
+                <div class="loading">
+                    <div class="spinner">🦞</div>
+                    <p>正在更新股價數據...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE}/portfolio`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('API 回應失敗');
+                }
+
+                const stocks = result.data;
+                const portfolioData = stocks.map(stock => {
+                    const portfolioItem = PORTFOLIO.find(p => p.code === stock.code);
+                    const shares = portfolioItem?.shares || 0;
+                    const avgCost = portfolioItem?.avgCost || stock.price;
+                    const marketValue = stock.price * shares;
+                    const costBasis = avgCost * shares;
+                    const profit = marketValue - costBasis;
+                    const profitPercent = ((profit / costBasis) * 100);
+
+                    return {
+                        ...stock,
+                        shares,
+                        avgCost,
+                        marketValue,
+                        costBasis,
+                        profit,
+                        profitPercent
+                    };
+                });
+
+                // 計算總計
+                const totalMarketValue = portfolioData.reduce((sum, s) => sum + s.marketValue, 0);
+                const totalCostBasis = portfolioData.reduce((sum, s) => sum + s.costBasis, 0);
+                const totalProfit = totalMarketValue - totalCostBasis;
+                const totalProfitPercent = ((totalProfit / totalCostBasis) * 100);
+
+                // 渲染儀表板
+                renderDashboard(portfolioData, {
+                    totalMarketValue,
+                    totalCostBasis,
+                    totalProfit,
+                    totalProfitPercent
+                });
+
+            } catch (error) {
+                console.error('載入持股失敗:', error);
+                dashboard.innerHTML = `
+                    <div class="result" style="background:#ffebee;color:#f44336;padding:20px;border-radius:10px;text-align:center;">
+                        ⚠️ 無法連接 API 伺服器<br>
+                        <small>請確認 npm start 已執行</small>
+                    </div>
+                `;
+            }
+        }
+
+        function renderDashboard(stocks, summary) {
+            const dashboard = document.getElementById('dashboard');
+            
+            const totalProfitClass = summary.totalProfit >= 0 ? 'up' : 'down';
+            const totalProfitSign = summary.totalProfit >= 0 ? '+' : '';
+
+            dashboard.innerHTML = `
+                <!-- 總計卡片 -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="label">總市值</div>
+                        <div class="value">${formatCurrency(summary.totalMarketValue)}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">總成本</div>
+                        <div class="value">${formatCurrency(summary.totalCostBasis)}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">總損益</div>
+                        <div class="value">${formatCurrency(summary.totalProfit)}</div>
+                        <div class="change ${totalProfitClass}">
+                            ${summary.totalProfit >= 0 ? '▲' : '▼'} ${summary.totalProfitPercent.toFixed(2)}%
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">持股數</div>
+                        <div class="value">${stocks.length} 檔</div>
+                    </div>
+                </div>
+
+                <!-- 持股明細 -->
+                <div class="stock-list">
+                    <h2 style="color:#667eea;margin-bottom:20px;">📊 持股明細</h2>
+                    ${stocks.map(stock => renderStockCard(stock)).join('')}
+                </div>
+            `;
+        }
+
+        function renderStockCard(stock) {
+            const profitClass = stock.profit >= 0 ? 'up' : 'down';
+            const profitSign = stock.profit >= 0 ? '+' : '';
+            const priceClass = stock.change >= 0 ? 'up' : 'down';
+
+            // 龍蝦建議
+            let recommendation = '';
+            if (stock.analysis.recommendation === 'buy') {
+                recommendation = `<div class="recommendation buy">✅ 建議買進 - 技術面強勢</div>`;
+            } else if (stock.analysis.recommendation === 'sell') {
+                recommendation = `<div class="recommendation sell">⚠️ 考慮停利 - 高檔風險</div>`;
+            } else {
+                recommendation = `<div class="recommendation wait">⏳ 持續觀望 - 等待突破</div>`;
+            }
+
+            return `
+                <div class="stock-card">
+                    <div class="stock-card-header">
+                        <h3>${stock.name}</h3>
+                        <span class="code">${stock.code}</span>
+                    </div>
+                    
+                    <div class="stock-grid">
+                        <div class="stock-info">
+                            <div class="label">目前價</div>
+                            <div class="value">${stock.price.toLocaleString()}</div>
+                        </div>
+                        <div class="stock-info">
+                            <div class="label">漲跌</div>
+                            <div class="value ${priceClass}">
+                                ${stock.change >= 0 ? '▲' : '▼'} ${Math.abs(stock.changePercent).toFixed(2)}%
+                            </div>
+                        </div>
+                        <div class="stock-info">
+                            <div class="label">持股數</div>
+                            <div class="value">${stock.shares.toLocaleString()}</div>
+                        </div>
+                        <div class="stock-info">
+                            <div class="label">平均成本</div>
+                            <div class="value">${stock.avgCost.toLocaleString()}</div>
+                        </div>
+                        <div class="stock-info">
+                            <div class="label">市值</div>
+                            <div class="value">${formatCurrency(stock.marketValue)}</div>
+                        </div>
+                        <div class="stock-info">
+                            <div class="label">損益</div>
+                            <div class="value ${profitClass}">
+                                ${profitSign}${formatCurrency(stock.profit)}
+                            </div>
+                        </div>
+                    </div>
+
+                    ${recommendation}
+                </div>
+            `;
+        }
+
+        function formatCurrency(amount) {
+            return 'NT$ ' + amount.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+        }
+
+        // 初始載入
+        loadPortfolio();
+
+        // 每 30 秒自動更新
+        setInterval(loadPortfolio, 30000);
+    </script>
+</body>
+</html>
