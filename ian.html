@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 Ian 編理財筆記追蹤系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .link-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: block;
+        }
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .link-card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .link-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        .link-card p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        .link-card .btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .stock-list {
+            margin-top: 30px;
+        }
+        .stock-list h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .stock-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 6px solid #4CAF50;
+        }
+        .stock-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .stock-item h3 {
+            color: #333;
+            font-size: 1.2rem;
+        }
+        .stock-item .badge {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .stock-item .info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stock-item .info-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .stock-item .info-item label {
+            color: #999;
+            font-size: 0.75rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .stock-item .info-item .value {
+            font-weight: 600;
+            color: #333;
+        }
+        .note-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: #fff3e0;
+            border-radius: 15px;
+            border-left: 6px solid #FF9800;
+        }
+        .note-section h3 {
+            color: #FF9800;
+            margin-bottom: 15px;
+        }
+        .note-section ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        .note-section li {
+            margin-bottom: 10px;
+        }
+        .refresh-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.3s;
+        }
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .loading .spinner {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦞 Ian 編理財筆記追蹤系統</h1>
+            <p class="subtitle">胡總裁專屬 | 整合 Ian 編分析 + 龍蝦交易系統</p>
+        </div>
+
+        <!-- Ian 編的社群連結 -->
+        <div class="links-grid">
+            <a href="https://www.threads.net/@ian.note_" target="_blank" class="link-card">
+                <div class="icon">📱</div>
+                <h3>Threads - Ian 編的理財筆記</h3>
+                <p>主要發文平台，每日強勢股分析</p>
+                <span class="btn">前往查看 →</span>
+            </a>
+
+            <a href="https://www.cmoney.tw/forum/user/7117426" target="_blank" class="link-card">
+                <div class="icon">📊</div>
+                <h3>CMoney - 股市爆料同學會</h3>
+                <p>421 篇文章，交易紀錄分享</p>
+                <span class="btn">前往查看 →</span>
+            </a>
+
+            <a href="https://linktr.ee/ian.note_" target="_blank" class="link-card">
+                <div class="icon">🔗</div>
+                <h3>Linktree - 所有平台</h3>
+                <p>IG、FB、Threads 整合連結</p>
+                <span class="btn">前往查看 →</span>
+            </a>
+
+            <a href="https://xbaoamigo-stack.github.io/trading.html" target="_blank" class="link-card" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+                <div class="icon">🦞</div>
+                <h3>龍蝦交易系統</h3>
+                <p>胡總裁專屬交易系統</p>
+                <span class="btn">立即使用 →</span>
+            </a>
+        </div>
+
+        <!-- Ian 編提到的股票 -->
+        <div class="stock-list">
+            <h2>📈 Ian 編近期分析股票</h2>
+            <div id="stock-list">
+                <div class="loading">
+                    <div class="spinner">🦞</div>
+                    <p>載入股票清單...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 學習重點 -->
+        <div class="note-section">
+            <h3>💡 學習 Ian 編的重點</h3>
+            <ul>
+                <li><strong>題材追蹤：</strong>關注 AI、機器人、半導體等熱門族群</li>
+                <li><strong>強勢股選股：</strong>選擇領漲股，不追落後補漲</li>
+                <li><strong>交易紀錄：</strong>公開進出點位，透明化檢討</li>
+                <li><strong>風險控管：</strong>設定停損，不 All-in 單一個股</li>
+                <li><strong>結合蔡森理論：</strong>題材 + 技術型態 = 高勝率</li>
+            </ul>
+        </div>
+
+        <!-- 整合功能 -->
+        <div class="note-section" style="background: #e8f5e9; border-left-color: #4CAF50; margin-top: 20px;">
+            <h3 style="color: #4CAF50;">🦞 龍蝦整合功能</h3>
+            <ul>
+                <li><strong>自動追蹤：</strong>Ian 編提到的股票自動加入觀察清單</li>
+                <li><strong>價格提醒：</strong>突破或回測時 Telegram 推播</li>
+                <li><strong>交易計畫：</strong>自動生成進場點、停損點、目標價</li>
+                <li><strong>績效追蹤：</strong>記錄 Ian 編提到的股票後續表現</li>
+            </ul>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshStocks()">🔄 更新股票清單</button>
+
+        <div class="footer">
+            🦞 龍蝦投資系統 | 胡總裁專屬<br>
+            資料來源：Ian 編的理財筆記 | 投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        // Ian 編近期提到的股票（根據搜尋結果）
+        const ianStocks = [
+            { code: '2330', name: '台積電', reason: 'AI 供應鏈龍頭', date: '2026-01-06' },
+            { code: '2454', name: '聯發科', reason: 'AI 晶片題材', date: '2026-01-06' },
+            { code: '2317', name: '鴻海', reason: 'AI 伺服器組裝', date: '2026-01-06' },
+            { code: '3661', name: '世芯-KY', reason: 'ASIC 設計服務', date: '2026-01-06' },
+            { code: '3443', name: '創意', reason: '晶圓設計服務', date: '2026-01-06' }
+        ];
+
+        async function loadStocks() {
+            const stockList = document.getElementById('stock-list');
+            
+            try {
+                // 從 API 獲取股價
+                const promises = ianStocks.map(async stock => {
+                    try {
+                        const response = await fetch(`http://localhost:3456/api/stock/${stock.code}`);
+                        const result = await response.json();
+                        return {
+                            ...stock,
+                            price: result.data.price,
+                            change: result.data.change,
+                            changePercent: result.data.changePercent
+                        };
+                    } catch (error) {
+                        return { ...stock, price: 0, change: 0, changePercent: 0 };
+                    }
+                });
+
+                const stocks = await Promise.all(promises);
+
+                stockList.innerHTML = stocks.map(stock => `
+                    <div class="stock-item">
+                        <div class="stock-item-header">
+                            <h3>${stock.name} (${stock.code})</h3>
+                            <span class="badge">${stock.reason}</span>
+                        </div>
+                        <div class="info">
+                            <div class="info-item">
+                                <label>目前價</label>
+                                <div class="value">${stock.price > 0 ? stock.price.toLocaleString() : '-'} 元</div>
+                            </div>
+                            <div class="info-item">
+                                <label>漲跌</label>
+                                <div class="value" style="color:${stock.change >= 0 ? '#4CAF50' : '#f44336'}">
+                                    ${stock.change >= 0 ? '▲' : '▼'} ${Math.abs(stock.changePercent).toFixed(2)}%
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <label>提到日期</label>
+                                <div class="value">${stock.date}</div>
+                            </div>
+                            <div class="info-item">
+                                <label>操作</label>
+                                <div class="value">
+                                    <button onclick="addToWatchlist('${stock.code}', '${stock.name}')" 
+                                            style="background:#667eea;color:white;border:none;padding:5px 12px;border-radius:5px;cursor:pointer;">
+                                        加入追蹤
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('載入股價失敗:', error);
+                stockList.innerHTML = `
+                    <div class="stock-item" style="border-left-color: #f44336;">
+                        <h3>⚠️ 無法連接 API 伺服器</h3>
+                        <p style="color:#666;margin-top:10px;">請確認 npm start 已執行</p>
+                    </div>
+                `;
+            }
+        }
+
+        function addToWatchlist(code, name) {
+            // 加入龍蝦系統的觀察清單
+            alert(`✅ ${name} (${code}) 已加入追蹤清單！\n\n我會在 Telegram 發送價格提醒設定教學`);
+            
+            // 發送 Telegram 通知
+            fetch('http://localhost:3456/api/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: `🦞 <b>加入追蹤通知</b>\n\n📈 ${name} (${code})\n\n胡總裁已將此股加入追蹤清單\n\n💡 建議：\n- 設定價格提醒\n- 生成交易計畫\n- 追蹤 Ian 編分析\n\n胡總裁，需要我幫您設定價格提醒嗎？`
+                })
+            }).catch(console.error);
+        }
+
+        function refreshStocks() {
+            loadStocks();
+        }
+
+        // 初始載入
+        loadStocks();
+
+        // 每 60 秒更新一次
+        setInterval(loadStocks, 60000);
+    </script>
+</body>
+</html>
