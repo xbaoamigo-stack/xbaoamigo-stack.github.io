@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龍蝦技術分析教學系統 | 小蝦米 🦞</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🦞</span>
+                <h1>龍蝦技術分析教學系統</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home">首頁</a>
+                <a href="#basics">基礎教學</a>
+                <a href="#patterns">型態辨識</a>
+                <a href="#calculator">計算工具</a>
+                <a href="#practice">實戰練習</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h2>龍蝦心法：先知道會賠多少，再想賺多少</h2>
+            <p class="subtitle">小蝦米 × 胡總裁 專屬投資系統</p>
+            <div class="hero-cards">
+                <div class="card highlight">
+                    <h3>📐 畫線基礎</h3>
+                    <p>趨勢線、頸線畫法教學</p>
+                </div>
+                <div class="card highlight">
+                    <h3>📊 12 型態</h3>
+                    <p>底部/頭部/中繼型態全解析</p>
+                </div>
+                <div class="card highlight">
+                    <h3>🎯 目標價計算</h3>
+                    <p>漲跌幅測算工具</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 基礎教學 -->
+    <section id="basics" class="section">
+        <div class="container">
+            <h2>📐 畫線基礎</h2>
+            
+            <div class="tutorial-grid">
+                <!-- 趨勢線 -->
+                <div class="tutorial-card">
+                    <h3>趨勢線畫法</h3>
+                    <div class="content">
+                        <h4>多頭趨勢線</h4>
+                        <ul>
+                            <li>連接兩個以上的「低點」</li>
+                            <li>由左下往右上畫</li>
+                            <li>第 3 點確認趨勢</li>
+                        </ul>
+                        <div class="diagram">
+                            <svg viewBox="0 0 200 100">
+                                <line x1="20" y1="80" x2="180" y2="30" stroke="#4CAF50" stroke-width="3"/>
+                                <circle cx="20" cy="80" r="5" fill="#4CAF50"/>
+                                <circle cx="100" cy="55" r="5" fill="#4CAF50"/>
+                                <circle cx="180" cy="30" r="5" fill="#4CAF50"/>
+                            </svg>
+                            <p>低點連線 = 支撐</p>
+                        </div>
+
+                        <h4>空頭趨勢線</h4>
+                        <ul>
+                            <li>連接兩個以上的「高點」</li>
+                            <li>由左上往右下畫</li>
+                            <li>跌破 = 趨勢反轉</li>
+                        </ul>
+                        <div class="diagram">
+                            <svg viewBox="0 0 200 100">
+                                <line x1="20" y1="20" x2="180" y2="70" stroke="#f44336" stroke-width="3"/>
+                                <circle cx="20" cy="20" r="5" fill="#f44336"/>
+                                <circle cx="100" cy="45" r="5" fill="#f44336"/>
+                                <circle cx="180" cy="70" r="5" fill="#f44336"/>
+                            </svg>
+                            <p>高點連線 = 壓力</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 頸線 -->
+                <div class="tutorial-card featured">
+                    <h3>頸線畫法（核心技術）</h3>
+                    <div class="content">
+                        <div class="alert">
+                            <strong>龍蝦心法：</strong>頸線一旦被帶量突破，一般都會伴隨較大幅度的上漲、下跌
+                        </div>
+                        
+                        <h4>多頭頸線</h4>
+                        <ol>
+                            <li>確認季線（60MA）由下往上彎</li>
+                            <li>找到底部整理區的最高點</li>
+                            <li>畫水平線通過該點</li>
+                            <li>等待「帶量突破」</li>
+                        </ol>
+
+                        <h4>空頭頸線</h4>
+                        <ol>
+                            <li>確認季線（60MA）由上往下彎</li>
+                            <li>找到頭部整理區的最低點</li>
+                            <li>畫水平線通過該點</li>
+                            <li>等待「帶量跌破」</li>
+                        </ol>
+
+                        <div class="key-points">
+                            <h4>關鍵要點</h4>
+                            <ul>
+                                <li>✅ 下方/上方需有 3 個月以上整理</li>
+                                <li>✅ 突破時量 > 5 日均量 1.5 倍</li>
+                                <li>✅ 連續 3 日站穩確認</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 型態辨識 -->
+    <section id="patterns" class="section bg-light">
+        <div class="container">
+            <h2>📊 12 型態辨識</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="bottom">底部型態</button>
+                <button class="tab-btn" data-tab="top">頭部型態</button>
+                <button class="tab-btn" data-tab="continuation">中繼型態</button>
+            </div>
+
+            <!-- 底部型態 -->
+            <div class="tab-content active" id="bottom">
+                <div class="pattern-grid">
+                    <div class="pattern-card">
+                        <h4>W 底（雙重底）</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,20 L40,60 L60,30 L80,60 L100,20 L120,5" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                                <line x1="30" y1="25" x2="110" y2="25" stroke="#666" stroke-dasharray="4"/>
+                                <text x="70" y="20" text-anchor="middle" font-size="10">頸線</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>兩次探底，右側量放大</li>
+                            <li>進場：突破頸線</li>
+                            <li>停損：頸線下方 3-5%</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card">
+                        <h4>頭肩底</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,30 L40,50 L60,35 L80,65 L100,35 L120,50 L140,15" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                                <line x1="30" y1="32" x2="130" y2="32" stroke="#666" stroke-dasharray="4"/>
+                                <text x="80" y="28" text-anchor="middle" font-size="10">頸線</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>左肩 - 頭 - 右肩</li>
+                            <li>右肩量縮最佳</li>
+                            <li>勝率約 80%</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card">
+                        <h4>碗型底</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,20 Q75,70 130,20" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                                <line x1="20" y1="20" x2="130" y2="20" stroke="#666" stroke-dasharray="4"/>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>圓弧形底部</li>
+                            <li>緩慢築底</li>
+                            <li>突破碗緣進場</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card">
+                        <h4>破底翻</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,40 L50,40 L60,70 L70,40 L100,10" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                                <line x1="20" y1="40" x2="80" y2="40" stroke="#f44336" stroke-dasharray="4"/>
+                                <text x="50" y="35" text-anchor="middle" font-size="9">支撐</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>假跌破訊號</li>
+                            <li>3 天內站回</li>
+                            <li>主力洗盤</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 頭部型態 -->
+            <div class="tab-content" id="top">
+                <div class="pattern-grid">
+                    <div class="pattern-card danger">
+                        <h4>M 頭（雙重頂）</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,60 L40,10 L60,50 L80,10 L100,60 L120,75" fill="none" stroke="#f44336" stroke-width="2"/>
+                                <line x1="30" y1="55" x2="110" y2="55" stroke="#666" stroke-dasharray="4"/>
+                                <text x="70" y="50" text-anchor="middle" font-size="10">頸線</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>兩次衝高，右側量縮</li>
+                            <li>出場：跌破頸線</li>
+                            <li>停損：頸線上方 3-5%</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card danger">
+                        <h4>頭肩頂</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,50 L40,20 L60,45 L80,5 L100,45 L120,20 L140,65" fill="none" stroke="#f44336" stroke-width="2"/>
+                                <line x1="30" y1="48" x2="130" y2="48" stroke="#666" stroke-dasharray="4"/>
+                                <text x="80" y="43" text-anchor="middle" font-size="10">頸線</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>左肩 - 頭 - 右肩</li>
+                            <li>右肩量縮警示</li>
+                            <li>跌破全部出場</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card danger">
+                        <h4>破頂翻</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M20,40 L50,40 L60,10 L70,40 L100,70" fill="none" stroke="#f44336" stroke-width="2"/>
+                                <line x1="20" y1="40" x2="80" y2="40" stroke="#4CAF50" stroke-dasharray="4"/>
+                                <text x="50" y="35" text-anchor="middle" font-size="9">壓力</text>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>假突破訊號</li>
+                            <li>無法站穩</li>
+                            <li>主力誘多</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中繼型態 -->
+            <div class="tab-content" id="continuation">
+                <div class="pattern-grid">
+                    <div class="pattern-card">
+                        <h4>箱型整理</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <rect x="30" y="20" width="90" height="40" fill="none" stroke="#2196F3" stroke-width="2"/>
+                                <path d="M30,40 L120,40" stroke="#666" stroke-dasharray="4"/>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>區間上下移動</li>
+                            <li>突破方向跟進</li>
+                            <li>箱內高拋低吸</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card">
+                        <h4>三角形收斂</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <path d="M30,20 L120,20 L30,60 L120,60" fill="none" stroke="#2196F3" stroke-width="2"/>
+                                <path d="M30,40 L120,40" stroke="#666" stroke-dasharray="4"/>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>高點降低、低點抬高</li>
+                            <li>突破方向跟進</li>
+                            <li>末端變盤</li>
+                        </ul>
+                    </div>
+
+                    <div class="pattern-card">
+                        <h4>旗形整理</h4>
+                        <div class="pattern-diagram">
+                            <svg viewBox="0 0 150 80">
+                                <line x1="20" y1="70" x2="40" y2="20" stroke="#4CAF50" stroke-width="3"/>
+                                <path d="M40,25 L80,35 L75,50 L115,60" fill="none" stroke="#2196F3" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <ul>
+                            <li>陡坡 + 緩坡整理</li>
+                            <li>原趨勢延續</li>
+                            <li>突破旗面加碼</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 計算工具 -->
+    <section id="calculator" class="section">
+        <div class="container">
+            <h2>🎯 漲跌幅計算工具</h2>
+            
+            <div class="calculator-grid">
+                <div class="calculator-card">
+                    <h3>多頭目標價計算</h3>
+                    <form id="bullCalculator">
+                        <div class="form-group">
+                            <label>底部低點（元）</label>
+                            <input type="number" id="bottomLow" step="0.01" placeholder="例如：100">
+                        </div>
+                        <div class="form-group">
+                            <label>頸線價位（元）</label>
+                            <input type="number" id="neckline" step="0.01" placeholder="例如：120">
+                        </div>
+                        <button type="button" onclick="calculateBull()">計算</button>
+                        <div class="result" id="bullResult"></div>
+                    </form>
+                </div>
+
+                <div class="calculator-card">
+                    <h3>空頭目標價計算</h3>
+                    <form id="bearCalculator">
+                        <div class="form-group">
+                            <label>頭部高點（元）</label>
+                            <input type="number" id="topHigh" step="0.01" placeholder="例如：200">
+                        </div>
+                        <div class="form-group">
+                            <label>頸線價位（元）</label>
+                            <input type="number" id="bearNeckline" step="0.01" placeholder="例如：180">
+                        </div>
+                        <button type="button" onclick="calculateBear()">計算</button>
+                        <div class="result" id="bearResult"></div>
+                    </form>
+                </div>
+
+                <div class="calculator-card">
+                    <h3>風險報酬比計算</h3>
+                    <form id="riskCalculator">
+                        <div class="form-group">
+                            <label>進場價（元）</label>
+                            <input type="number" id="entryPrice" step="0.01" placeholder="例如：120">
+                        </div>
+                        <div class="form-group">
+                            <label>停損價（元）</label>
+                            <input type="number" id="stopLoss" step="0.01" placeholder="例如：115">
+                        </div>
+                        <div class="form-group">
+                            <label>目標價（元）</label>
+                            <input type="number" id="targetPrice" step="0.01" placeholder="例如：140">
+                        </div>
+                        <button type="button" onclick="calculateRisk()">計算</button>
+                        <div class="result" id="riskResult"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 實戰練習 -->
+    <section id="practice" class="section bg-light">
+        <div class="container">
+            <h2>📝 實戰練習</h2>
+            
+            <div class="quiz-container">
+                <div class="quiz-question">
+                    <h3>問題 1：型態辨識</h3>
+                    <p>股價兩次探底，右底高於左底 2%，突破時量放大 1.8 倍，這是什麼型態？</p>
+                    <div class="options">
+                        <label><input type="radio" name="q1" value="a"> M 頭</label>
+                        <label><input type="radio" name="q1" value="b"> W 底</label>
+                        <label><input type="radio" name="q1" value="c"> 頭肩頂</label>
+                        <label><input type="radio" name="q1" value="d"> 箱型整理</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question">
+                    <h3>問題 2：目標價計算</h3>
+                    <p>W 底低點 50 元，頸線 60 元，突破後目標價是多少？</p>
+                    <div class="options">
+                        <label><input type="radio" name="q2" value="a"> 65 元</label>
+                        <label><input type="radio" name="q2" value="b"> 70 元</label>
+                        <label><input type="radio" name="q2" value="c"> 75 元</label>
+                        <label><input type="radio" name="q2" value="d"> 80 元</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question">
+                    <h3>問題 3：停損設定</h3>
+                    <p>頸線突破 100 元進場，停損點應該設在哪？</p>
+                    <div class="options">
+                        <label><input type="radio" name="q3" value="a"> 90 元</label>
+                        <label><input type="radio" name="q3" value="b"> 95-97 元</label>
+                        <label><input type="radio" name="q3" value="c"> 99 元</label>
+                        <label><input type="radio" name="q3" value="d"> 105 元</label>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="checkQuiz()">提交答案</button>
+                <div class="quiz-result" id="quizResult"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 蔡森語錄 -->
+    <section class="quotes">
+        <div class="container">
+            <h2>💬 蔡森語錄</h2>
+            <div class="quote-grid">
+                <div class="quote-card">
+                    <p>「方向不對，努力白費」</p>
+                </div>
+                <div class="quote-card">
+                    <p>「先知道會賠多少，再想賺多少」</p>
+                </div>
+                <div class="quote-card">
+                    <p>「量不會騙人，價格會」</p>
+                </div>
+                <div class="quote-card">
+                    <p>「散戶最大的錯誤：在頭部買進，在底部賣出」</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🦞 龍蝦虛擬員工系統 | 小蝦米製作</p>
+            <p>胡總裁專屬投資分析工具 | 投資有風險，入市需謹慎</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
