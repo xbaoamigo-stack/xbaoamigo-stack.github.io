@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI 產業地圖 Pro - 胡總裁專屬</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .search-bar button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .filter-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .filter-tag {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+        }
+        .industry-map {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .industry-section {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+        .industry-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .industry-section.upstream::before { background: linear-gradient(90deg, #f44336, #ff5722); }
+        .industry-section.midstream::before { background: linear-gradient(90deg, #2196F3, #03a9f4); }
+        .industry-section.downstream::before { background: linear-gradient(90deg, #4CAF50, #8bc34a); }
+        
+        .industry-section h3 {
+            color: #333;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .industry-section .icon {
+            font-size: 2rem;
+        }
+        .industry-section .desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .stock-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .stock-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .stock-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        .stock-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .stock-item-header h4 {
+            color: #333;
+            font-size: 1.05rem;
+        }
+        .stock-code {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .stock-item-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .stock-item-info {
+            text-align: center;
+            padding: 6px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .stock-item-info .label {
+            color: #999;
+            font-size: 0.65rem;
+            margin-bottom: 3px;
+        }
+        .stock-item-info .value {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.85rem;
+        }
+        .stock-item-info .value.up { color: #4CAF50; }
+        .stock-item-info .value.down { color: #f44336; }
+        .stock-item-desc {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+        .your-holdings-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+        }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card .label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .trend-section {
+            background: #e3f2fd;
+            border-left: 6px solid #2196F3;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .trend-section h3 {
+            color: #2196F3;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .trend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .trend-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        .trend-item h4 {
+            color: #2196F3;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .trend-item p {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .loading .spinner {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .btn-group {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+        }
+        @media (max-width: 1024px) {
+            .industry-map {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI 產業地圖 Pro</h1>
+            <p class="subtitle">胡總裁專屬 | 完整 AI 供應鏈分析系統</p>
+        </div>
+
+        <!-- 統計欄 -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="label">📊 追蹤股票</div>
+                <div class="value">52 檔</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">✅ 您的持股</div>
+                <div class="value">4 檔</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">📈 上漲家數</div>
+                <div class="value" id="up-count">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">📉 下跌家數</div>
+                <div class="value" id="down-count">--</div>
+            </div>
+        </div>
+
+        <!-- 搜尋與篩選 -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="搜尋股票代號或名稱...">
+            <button onclick="searchStock()">🔍 搜尋</button>
+        </div>
+
+        <div class="filter-tags">
+            <div class="filter-tag active" onclick="filterBy('all')">全部</div>
+            <div class="filter-tag" onclick="filterBy('upstream')">上游晶片</div>
+            <div class="filter-tag" onclick="filterBy('midstream')">中游伺服器</div>
+            <div class="filter-tag" onclick="filterBy('downstream')">下游應用</div>
+            <div class="filter-tag" onclick="filterBy('holdings')">我的持股</div>
+        </div>
+
+        <!-- 產業地圖 -->
+        <div class="industry-map">
+            <!-- 上游 -->
+            <div class="industry-section upstream" id="upstream">
+                <h3><span class="icon">🔧</span> 上游 - 晶片設計與製造</h3>
+                <p class="desc">AI 的核心，包含 GPU、ASIC、晶圓製造、IC 設計等</p>
+                <div class="stock-list" id="upstream-list">
+                    <div class="loading">
+                        <div class="spinner">🦞</div>
+                        <p>載入中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中游 -->
+            <div class="industry-section midstream" id="midstream">
+                <h3><span class="icon">🖥️</span> 中游 - 伺服器與組裝</h3>
+                <p class="desc">AI 伺服器、散熱系統、電源供應、PCB 等</p>
+                <div class="stock-list" id="midstream-list">
+                    <div class="loading">
+                        <div class="spinner">🦞</div>
+                        <p>載入中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下游 -->
+            <div class="industry-section downstream" id="downstream">
+                <h3><span class="icon">📱</span> 下游 - 應用與服務</h3>
+                <p class="desc">AI 軟體、雲端服務、終端應用、電信等</p>
+                <div class="stock-list" id="downstream-list">
+                    <div class="loading">
+                        <div class="spinner">🦞</div>
+                        <p>載入中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 趨勢 -->
+        <div class="trend-section">
+            <h3>🚀 2026 AI 產業趨勢</h3>
+            <div class="trend-grid">
+                <div class="trend-item">
+                    <h4>📊 邊緣 AI 爆發</h4>
+                    <p>聯發科、高通推動手機、PC 本地 AI 運算，降低雲端依賴，提升隱私與速度。</p>
+                </div>
+                <div class="trend-item">
+                    <h4>🖥️ AI 伺服器需求</h4>
+                    <p>NVIDIA GB200 量產，鴻海、廣達、緯創受惠，2026 年出貨量預估成長 150%。</p>
+                </div>
+                <div class="trend-item">
+                    <h4>🤖 機器人應用</h4>
+                    <p>特斯拉 Optimus、Figure AI 帶動台灣供應鏈，從馬達到感測器全面受惠。</p>
+                </div>
+                <div class="trend-item">
+                    <h4>☁️ 雲端 AI 服務</h4>
+                    <p>Microsoft Azure、Google Cloud、AWS 持續擴張，帶動台灣伺服器供應鏈。</p>
+                </div>
+                <div class="trend-item">
+                    <h4>🚗 自動駕駛</h4>
+                    <p>NVIDIA DRIVE、Mobileye 推動車用 AI，台灣電子零組件廠商業績看漲。</p>
+                </div>
+                <div class="trend-item">
+                    <h4>💊 AI 醫療</h4>
+                    <p>AI 輔助診斷、藥物研發加速，台灣生技與 AI 結合成新亮點。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="https://xbaoamigo-stack.github.io/m.html" class="btn">📊 查看我的持股</a>
+            <a href="https://xbaoamigo-stack.github.io/caisen.html" class="btn">📚 蔡森技術分析</a>
+            <button class="btn" onclick="loadStocks()">🔄 更新股價</button>
+        </div>
+
+        <div class="footer">
+            🦞 龍蝦投資系統 | 胡總裁專屬<br>
+            資料來源：公開資訊觀測站、Yahoo Finance | 投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        // AI 概念股完整清單（52 檔）
+        const AI_STOCKS = {
+            upstream: [
+                { code: '2330', name: '台積電', desc: 'AI 晶片代工龍頭，NVIDIA 獨家供應商', holding: true },
+                { code: '2454', name: '聯發科', desc: '邊緣 AI 晶片龍頭，天璣系列', holding: true },
+                { code: '3034', name: '聯詠', desc: 'AIoT 晶片、顯示驅動 IC' },
+                { code: '3041', name: '揚智', desc: 'AI 機上盒晶片' },
+                { code: '3045', name: '台灣大', desc: 'AI 電信服務' },
+                { code: '3294', name: '和碩', desc: 'AI 晶片封測' },
+                { code: '3379', name: '聯陽', desc: 'AI PC 晶片組' },
+                { code: '3443', name: '創意', desc: 'ASIC 設計服務，NVIDIA 合作' },
+                { code: '3529', name: '力智', desc: 'AI 電源管理 IC' },
+                { code: '3592', name: '瑞昱', desc: 'AI 音效、網路晶片' },
+                { code: '3661', name: '世芯-KY', desc: 'ASIC 設計，AI 晶片客製化' },
+                { code: '3710', name: '凌陽', desc: 'AI 影像辨識晶片' },
+                { code: '4952', name: '凌通', desc: 'AI 藍牙、WiFi 晶片' },
+                { code: '5274', name: '信驊', desc: 'AI 伺服器 BMC 晶片' },
+                { code: '5474', name: '士微', desc: 'AI 功率半導體' },
+                { code: '6531', name: '愛普', desc: 'AI 顯示驅動 IC' },
+                { code: '6756', name: '威盛', desc: 'AI 邊緣運算平台' }
+            ],
+            midstream: [
+                { code: '2317', name: '鴻海', desc: 'AI 伺服器組裝龍頭', holding: true },
+                { code: '2324', name: '仁寶', desc: 'AI 伺服器、筆電' },
+                { code: '2353', name: '宏碁', desc: 'AI PC、伺服器' },
+                { code: '2357', name: '華碩', desc: 'AI 主機板、顯卡' },
+                { code: '2382', name: '廣達', desc: 'AI 伺服器 ODM 大廠' },
+                { code: '2393', name: '億光', desc: 'AI 伺服器光耦合器' },
+                { code: '2426', name: '英業達', desc: 'AI 伺服器、邊緣運算' },
+                { code: '2439', name: '美律', desc: 'AI 語音辨識' },
+                { code: '2474', name: '燁聯', desc: 'AI 伺服器散熱' },
+                { code: '3017', name: '奇鋐', desc: 'AI 伺服器散熱解決方案' },
+                { code: '3046', name: '建興電', desc: 'AI 儲存裝置' },
+                { code: '3189', name: '景碩', desc: 'AI 晶片基板' },
+                { code: '3231', name: '緯創', desc: 'AI 伺服器組裝' },
+                { code: '3274', name: '和碩', desc: 'AI 伺服器、筆電' },
+                { code: '3324', name: '雙鴻', desc: 'AI 伺服器散熱' },
+                { code: '3338', name: '泰碩', desc: 'AI 散熱模組' },
+                { code: '3376', name: '新日興', desc: 'AI 伺服器鉸鏈' },
+                { code: '3533', name: '嘉聯益', desc: 'AI 伺服器 FPC' },
+                { code: '3714', name: '恩得利', desc: 'AI 伺服器散熱' },
+                { code: '4938', name: '凡甲', desc: 'AI 伺服器連接器' },
+                { code: '6277', name: '宏正', desc: 'AI KVM 切換器' }
+            ],
+            downstream: [
+                { code: '2412', name: '中華電', desc: 'AI 電信、邊緣運算', holding: false },
+                { code: '2454', name: '聯發科', desc: 'AI 手機晶片', holding: true },
+                { code: '3008', name: '大立光', desc: 'AI 手機鏡頭', holding: false },
+                { code: '3045', name: '台灣大', desc: 'AI 電信服務', holding: false },
+                { code: '3164', name: '景岳', desc: 'AI 醫療生技', holding: false },
+                { code: '3296', name: '和勤', desc: 'AI 軟體服務', holding: false },
+                { code: '3450', name: '聯鈞', desc: 'AI 光通訊模組', holding: false },
+                { code: '3532', name: '台勝科', desc: 'AI 半導體材料', holding: false },
+                { code: '3594', name: '淳安', desc: 'AI 變壓器', holding: false },
+                { code: '3704', name: '環宇-KY', desc: 'AI 晶片封測', holding: false },
+                { code: '4161', name: '鐿鈦', desc: 'AI 醫療器材', holding: false },
+                { code: '4916', name: '美時', desc: 'AI 藥物研發', holding: false },
+                { code: '5289', name: '宜鼎', desc: 'AI 嵌入式儲存', holding: false },
+                { code: '6156', name: '富達電', desc: 'AI RFID 解決方案', holding: false },
+                { code: '6525', name: '台灣寬頻', desc: 'AI 數據中心', holding: false }
+            ]
+        };
+
+        // 胡總裁的持股
+        const HOLDINGS = ['2330', '2454', '2317', '0050'];
+
+        // 模擬股價數據（實際應接 API）
+        const MOCK_PRICES = {
+            '2330': { price: 2215, change: -1.5 },
+            '2454': { price: 3525, change: 0.5 },
+            '2317': { price: 248, change: -0.2 },
+            '0050': { price: 95.2, change: 0.5 },
+            '3661': { price: 4850, change: 2.1 },
+            '2382': { price: 285, change: 2.1 },
+            '3231': { price: 115, change: 1.5 },
+            '3008': { price: 2450, change: 0.8 },
+            '2412': { price: 128, change: 0 },
+            '3443': { price: 4260, change: 3.4 },
+            '5274': { price: 1850, change: 1.2 },
+            '3017': { price: 485, change: 3.5 },
+            '3324': { price: 625, change: 2.8 },
+            '6756': { price: 95, change: -0.5 }
+        };
+
+        function getPrice(code) {
+            return MOCK_PRICES[code] || { price: 100, change: 0 };
+        }
+
+        function renderStockList(stocks, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = stocks.map(stock => {
+                const priceData = getPrice(stock.code);
+                const isHolding = HOLDINGS.includes(stock.code) || stock.holding;
+                const changeClass = priceData.change >= 0 ? 'up' : 'down';
+                const changeSign = priceData.change >= 0 ? '▲' : '▼';
+
+                return `
+                    <div class="stock-item" onclick="window.open('https://xbaoamigo-stack.github.io/m.html', '_blank')">
+                        <div class="stock-item-header">
+                            <h4>${stock.name} ${isHolding ? '<span class="your-holdings-badge">您的持股</span>' : ''}</h4>
+                            <span class="stock-code">${stock.code}</span>
+                        </div>
+                        <div class="stock-item-grid">
+                            <div class="stock-item-info">
+                                <div class="label">股價</div>
+                                <div class="value">${priceData.price.toLocaleString()}</div>
+                            </div>
+                            <div class="stock-item-info">
+                                <div class="label">漲跌</div>
+                                <div class="value ${changeClass}">${changeSign}${Math.abs(priceData.change)}%</div>
+                            </div>
+                            <div class="stock-item-info">
+                                <div class="label">AI 業務</div>
+                                <div class="value">核心</div>
+                            </div>
+                        </div>
+                        <div class="stock-item-desc">
+                            <strong>AI 地位：</strong>${stock.desc}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadStocks() {
+            renderStockList(AI_STOCKS.upstream, 'upstream-list');
+            renderStockList(AI_STOCKS.midstream, 'midstream-list');
+            renderStockList(AI_STOCKS.downstream, 'downstream-list');
+
+            // 更新統計
+            const allStocks = [...AI_STOCKS.upstream, ...AI_STOCKS.midstream, ...AI_STOCKS.downstream];
+            let upCount = 0, downCount = 0;
+            allStocks.forEach(stock => {
+                const priceData = getPrice(stock.code);
+                if (priceData.change >= 0) upCount++;
+                else downCount++;
+            });
+
+            document.getElementById('up-count').textContent = upCount;
+            document.getElementById('down-count').textContent = downCount;
+        }
+
+        function filterBy(category) {
+            document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const sections = {
+                upstream: document.getElementById('upstream'),
+                midstream: document.getElementById('midstream'),
+                downstream: document.getElementById('downstream'),
+                all: [document.getElementById('upstream'), document.getElementById('midstream'), document.getElementById('downstream')],
+                holdings: [document.getElementById('upstream'), document.getElementById('midstream'), document.getElementById('downstream')]
+            };
+
+            if (category === 'all') {
+                Object.values(sections).forEach(sec => {
+                    if (Array.isArray(sec)) sec.forEach(s => s.style.display = 'block');
+                    else sec.style.display = 'block';
+                });
+            } else if (category === 'holdings') {
+                // 只显示持股
+                ['upstream', 'midstream', 'downstream'].forEach(section => {
+                    const container = document.getElementById(`${section}-list`);
+                    const stocks = AI_STOCKS[section].filter(s => HOLDINGS.includes(s.code) || s.holding);
+                    renderStockList(stocks, `${section}-list`);
+                });
+            } else {
+                Object.entries(sections).forEach(([key, sec]) => {
+                    if (Array.isArray(sec)) sec.forEach(s => s.style.display = key === category ? 'block' : 'none');
+                    else sec.style.display = key === category ? 'block' : 'none';
+                });
+            }
+        }
+
+        function searchStock() {
+            const query = document.getElementById('search-input').value.toUpperCase();
+            if (!query) return;
+
+            // 搜尋所有股票
+            const allStocks = [
+                ...AI_STOCKS.upstream.map(s => ({...s, section: 'upstream'})),
+                ...AI_STOCKS.midstream.map(s => ({...s, section: 'midstream'})),
+                ...AI_STOCKS.downstream.map(s => ({...s, section: 'downstream'}))
+            ];
+
+            const results = allStocks.filter(s => 
+                s.code.includes(query) || s.name.toUpperCase().includes(query)
+            );
+
+            if (results.length === 0) {
+                alert('找不到符合的股票');
+                return;
+            }
+
+            // 顯示搜尋結果
+            alert(`找到 ${results.length} 檔股票：\n${results.map(s => `${s.name} (${s.code})`).join('\n')}`);
+        }
+
+        // 初始載入
+        loadStocks();
+
+        // 每 60 秒更新一次
+        setInterval(loadStocks, 60000);
+    </script>
+</body>
+</html>
