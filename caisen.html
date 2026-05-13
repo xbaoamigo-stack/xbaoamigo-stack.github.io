@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蔡森技術分析教學 🦞</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        .quote {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-style: italic;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .card ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        .card li {
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .pattern-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border-top: 4px solid #4CAF50;
+        }
+        .pattern-card.danger {
+            border-top-color: #f44336;
+        }
+        .pattern-card h4 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .pattern-svg {
+            width: 100%;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .calculator {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .calculator h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .result.success { background: #e8f5e9; color: #4CAF50; }
+        .result.warning { background: #fff3e0; color: #FF9800; }
+        .result.danger { background: #ffebee; color: #f44336; }
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .key-point {
+            background: #fff3e0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦞 蔡森技術分析教學</h1>
+        <p class="subtitle">37 年實戰經驗 × 27 年教學精華</p>
+        
+        <div class="quote">
+            "先知道會賠多少，再想賺多少"
+        </div>
+
+        <!-- 基礎教學 -->
+        <div class="section">
+            <h2 class="section-title">📐 畫線基礎</h2>
+            
+            <div class="card">
+                <h3>趨勢線畫法</h3>
+                <ul>
+                    <li><strong>多頭趨勢線：</strong>連接兩個以上「低點」，由左下往右上</li>
+                    <li><strong>空頭趨勢線：</strong>連接兩個以上「高點」，由左上往右下</li>
+                    <li><strong>關鍵：</strong>第 3 點確認趨勢，跌破/突破=趨勢反轉</li>
+                </ul>
+            </div>
+
+            <div class="card" style="border-left-color: #FF6B35;">
+                <h3>頸線畫法（核心技術）</h3>
+                <div class="key-point">
+                    <strong>蔡森心法：</strong>頸線一旦被帶量突破，都會伴隨較大幅度的上漲或下跌
+                </div>
+                <ul>
+                    <li><strong>多頭頸線：</strong>季線上彎 + 底部整理區最高點畫水平線</li>
+                    <li><strong>空頭頸線：</strong>季線下彎 + 頭部整理區最低點畫水平線</li>
+                    <li><strong>確認：</strong>突破時量>5 日均量 1.5 倍 + 連續 3 日站穩</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 型態辨識 -->
+        <div class="section">
+            <h2 class="section-title">📊 型態辨識</h2>
+            
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('bottom')">底部</button>
+                <button class="tab-btn" onclick="switchTab('top')">頭部</button>
+                <button class="tab-btn" onclick="switchTab('other')">其他</button>
+            </div>
+
+            <div id="bottom" class="tab-content active">
+                <div class="pattern-grid">
+                    <div class="pattern-card">
+                        <h4>W 底</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,20 L30,45 L50,25 L70,45 L90,10" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                            <line x1="20" y1="22" x2="80" y2="22" stroke="#666" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>兩次探底</li>
+                            <li>突破頸線進場</li>
+                            <li>勝率~75%</li>
+                        </ul>
+                    </div>
+                    <div class="pattern-card">
+                        <h4>頭肩底</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,30 L30,20 L50,45 L70,20 L90,5" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                            <line x1="20" y1="22" x2="80" y2="22" stroke="#666" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>左肩 - 頭 - 右肩</li>
+                            <li>右肩量縮最佳</li>
+                            <li>勝率~80%</li>
+                        </ul>
+                    </div>
+                    <div class="pattern-card">
+                        <h4>破底翻</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,25 L40,25 L50,45 L60,25 L90,5" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                            <line x1="10" y1="25" x2="50" y2="25" stroke="#f44336" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>假跌破</li>
+                            <li>3 天內站回</li>
+                            <li>主力洗盤</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="top" class="tab-content">
+                <div class="pattern-grid">
+                    <div class="pattern-card danger">
+                        <h4>M 頭</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,40 L30,5 L50,35 L70,5 L90,45" fill="none" stroke="#f44336" stroke-width="2"/>
+                            <line x1="20" y1="38" x2="80" y2="38" stroke="#666" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>兩次衝高</li>
+                            <li>跌破頸線出場</li>
+                            <li>右側量縮警示</li>
+                        </ul>
+                    </div>
+                    <div class="pattern-card danger">
+                        <h4>頭肩頂</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,35 L30,15 L50,5 L70,15 L90,45" fill="none" stroke="#f44336" stroke-width="2"/>
+                            <line x1="20" y1="33" x2="80" y2="33" stroke="#666" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>左肩 - 頭 - 右肩</li>
+                            <li>跌破全部出場</li>
+                            <li>高檔警訊</li>
+                        </ul>
+                    </div>
+                    <div class="pattern-card danger">
+                        <h4>破頂翻</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M10,25 L40,25 L50,5 L60,25 L90,45" fill="none" stroke="#f44336" stroke-width="2"/>
+                            <line x1="10" y1="25" x2="50" y2="25" stroke="#4CAF50" stroke-dasharray="3"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>假突破</li>
+                            <li>無法站穩</li>
+                            <li>主力誘多</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="other" class="tab-content">
+                <div class="pattern-grid">
+                    <div class="pattern-card">
+                        <h4>箱型整理</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <rect x="15" y="10" width="70" height="30" fill="none" stroke="#2196F3" stroke-width="2"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>區間震盪</li>
+                            <li>突破方向跟</li>
+                        </ul>
+                    </div>
+                    <div class="pattern-card">
+                        <h4>三角形</h4>
+                        <svg class="pattern-svg" viewBox="0 0 100 50">
+                            <path d="M15,10 L85,10 L15,40 L85,40" fill="none" stroke="#2196F3" stroke-width="2"/>
+                        </svg>
+                        <ul style="text-align:left;font-size:0.85rem;">
+                            <li>收斂整理</li>
+                            <li>末端變盤</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 計算工具 -->
+        <div class="section">
+            <h2 class="section-title">🎯 計算工具</h2>
+            
+            <div class="calculator">
+                <h3>多頭目標價</h3>
+                <div class="form-group">
+                    <label>底部低點（元）</label>
+                    <input type="number" id="bottomLow" placeholder="例：100" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>頸線價位（元）</label>
+                    <input type="number" id="neckline" placeholder="例：120" step="0.01">
+                </div>
+                <button class="btn" onclick="calcBull()">計算</button>
+                <div id="bullResult" class="result" style="display:none;"></div>
+            </div>
+
+            <div class="calculator">
+                <h3>風險報酬比</h3>
+                <div class="form-group">
+                    <label>進場價（元）</label>
+                    <input type="number" id="entryPrice" placeholder="例：120" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>停損價（元）</label>
+                    <input type="number" id="stopLoss" placeholder="例：115" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>目標價（元）</label>
+                    <input type="number" id="targetPrice" placeholder="例：140" step="0.01">
+                </div>
+                <button class="btn" onclick="calcRisk()">計算</button>
+                <div id="riskResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 蔡森語錄 -->
+        <div class="section">
+            <h2 class="section-title">💬 蔡森語錄</h2>
+            <div class="card" style="border-left-color: #9C27B0;">
+                <ul>
+                    <li>「方向不對，努力白費」</li>
+                    <li>「量不會騙人，價格會」</li>
+                    <li>「趨勢是你的朋友」</li>
+                    <li>「散戶最大的錯誤：在頭部買進，在底部賣出」</li>
+                    <li>「與其猜測底部，不如等待突破」</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            🦞 小蝦米 | 蔡森技術分析教學系統<br>
+            投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function calcBull() {
+            const bottom = parseFloat(document.getElementById('bottomLow').value);
+            const neck = parseFloat(document.getElementById('neckline').value);
+            const result = document.getElementById('bullResult');
+            
+            if (!bottom || !neck) {
+                result.className = 'result danger';
+                result.innerHTML = '⚠️ 請填寫完整';
+                result.style.display = 'block';
+                return;
+            }
+
+            const measure = neck - bottom;
+            const target = neck + measure;
+            result.className = 'result success';
+            result.innerHTML = `測幅：${measure.toFixed(2)}元 | 目標價：${target.toFixed(2)}元`;
+            result.style.display = 'block';
+        }
+
+        function calcRisk() {
+            const entry = parseFloat(document.getElementById('entryPrice').value);
+            const stop = parseFloat(document.getElementById('stopLoss').value);
+            const target = parseFloat(document.getElementById('targetPrice').value);
+            const result = document.getElementById('riskResult');
+            
+            if (!entry || !stop || !target) {
+                result.className = 'result danger';
+                result.innerHTML = '⚠️ 請填寫完整';
+                result.style.display = 'block';
+                return;
+            }
+
+            const risk = entry - stop;
+            const reward = target - entry;
+            const ratio = (reward / risk).toFixed(2);
+            
+            if (ratio >= 2) {
+                result.className = 'result success';
+                result.innerHTML = `風險報酬比 1:${ratio} ✅ 符合蔡森標準`;
+            } else if (ratio >= 1.5) {
+                result.className = 'result warning';
+                result.innerHTML = `風險報酬比 1:${ratio} ⚠️ 建議≥1:2`;
+            } else {
+                result.className = 'result danger';
+                result.innerHTML = `風險報酬比 1:${ratio} ❌ 不建議進場`;
+            }
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
