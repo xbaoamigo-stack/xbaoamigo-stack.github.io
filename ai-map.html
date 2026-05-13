@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 台灣 AI 產業地圖 - 胡總裁專屬</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        .intro {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        .section-title {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .supply-chain {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chain-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 6px solid #667eea;
+        }
+        .chain-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .chain-section .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stock-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .stock-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        .stock-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .stock-card-header h4 {
+            color: #333;
+            font-size: 1.1rem;
+        }
+        .stock-code {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .stock-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .stock-info-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .stock-info-item .label {
+            color: #999;
+            font-size: 0.7rem;
+            margin-bottom: 4px;
+        }
+        .stock-info-item .value {
+            font-weight: 600;
+            color: #333;
+        }
+        .stock-info-item .value.up { color: #4CAF50; }
+        .stock-info-item .value.down { color: #f44336; }
+        .stock-desc {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .ai-trend {
+            background: #e3f2fd;
+            border-left: 6px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .ai-trend h3 {
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+        .ai-trend ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        .ai-trend li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        .your-holdings {
+            background: #e8f5e9;
+            border-left: 6px solid #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .your-holdings h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .holding-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .holding-item .name {
+            font-weight: 600;
+            color: #333;
+        }
+        .holding-item .badge {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 768px) {
+            .supply-chain {
+                grid-template-columns: 1fr;
+            }
+            .stock-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 台灣 AI 產業地圖</h1>
+            <p class="subtitle">胡總裁專屬 | 一張圖看懂 AI 供應鏈</p>
+        </div>
+
+        <div class="intro">
+            <p>🦞 龍蝦投資系統 × AI 產業分析</p>
+            <p style="margin-top:10px;font-size:0.95rem;">運用 AI 分析與數據，將複雜的 AI 產業轉化為易懂的產業地圖，幫助您快速掌握產業運作與公司在供應鏈中的定位。</p>
+        </div>
+
+        <!-- 您的 AI 持股 -->
+        <div class="your-holdings">
+            <h3>✅ 您的 AI 相關持股</h3>
+            <div class="holding-item">
+                <div>
+                    <span class="name">台積電 (2330)</span>
+                    <span style="color:#666;font-size:0.85rem;margin-left:10px;">AI 晶片核心</span>
+                </div>
+                <span class="badge">核心持股</span>
+            </div>
+            <div class="holding-item">
+                <div>
+                    <span class="name">聯發科 (2454)</span>
+                    <span style="color:#666;font-size:0.85rem;margin-left:10px;">AI 邊緣運算</span>
+                </div>
+                <span class="badge">核心持股</span>
+            </div>
+            <div class="holding-item">
+                <div>
+                    <span class="name">鴻海 (2317)</span>
+                    <span style="color:#666;font-size:0.85rem;margin-left:10px;">AI 伺服器組裝</span>
+                </div>
+                <span class="badge">觀察持股</span>
+            </div>
+            <div class="holding-item">
+                <div>
+                    <span class="name">0050 元大台灣 50</span>
+                    <span style="color:#666;font-size:0.85rem;margin-left:10px;">含 AI 權值股</span>
+                </div>
+                <span class="badge">間接持股</span>
+            </div>
+        </div>
+
+        <!-- AI 供應鏈 -->
+        <h2 class="section-title">📊 台灣 AI 供應鏈全解析</h2>
+        
+        <div class="supply-chain">
+            <!-- 上游 -->
+            <div class="chain-section">
+                <div class="icon">🔧</div>
+                <h3>上游 - 晶片設計與製造</h3>
+                <p style="color:#666;margin-bottom:15px;">AI 的核心，包含 GPU、ASIC、晶圓製造等</p>
+                
+                <div class="stock-grid">
+                    <div class="stock-card" onclick="window.open('https://xbaoamigo-stack.github.io/m.html', '_blank')">
+                        <div class="stock-card-header">
+                            <h4>台積電</h4>
+                            <span class="stock-code">2330</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">2,215 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value down">▼ 1.5%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>全球 AI 晶片代工龍頭，NVIDIA、AMD 獨家供應商<br>
+                            <strong>關鍵技術：</strong>3nm、5nm 先進製程
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://xbaoamigo-stack.github.io/m.html', '_blank')">
+                        <div class="stock-card-header">
+                            <h4>聯發科</h4>
+                            <span class="stock-code">2454</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">3,525 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value up">▲ 0.5%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>邊緣 AI 晶片龍頭，手機 AI SoC<br>
+                            <strong>關鍵技術：</strong>天璣系列、AI 處理器
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中游 -->
+            <div class="chain-section">
+                <div class="icon">🖥️</div>
+                <h3>中游 - 伺服器與組裝</h3>
+                <p style="color:#666;margin-bottom:15px;">AI 伺服器、散熱系統、電源供應等</p>
+                
+                <div class="stock-grid">
+                    <div class="stock-card" onclick="window.open('https://xbaoamigo-stack.github.io/m.html', '_blank')">
+                        <div class="stock-card-header">
+                            <h4>鴻海</h4>
+                            <span class="stock-code">2317</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">248 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value down">▼ 0.2%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>AI 伺服器組裝龍頭<br>
+                            <strong>關鍵客戶：</strong>NVIDIA、雲端大廠
+                        </div>
+                    </div>
+
+                    <div class="stock-card">
+                        <div class="stock-card-header">
+                            <h4>廣達</h4>
+                            <span class="stock-code">2382</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">285 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value up">▲ 2.1%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>AI 伺服器 ODM 大廠<br>
+                            <strong>關鍵客戶：</strong>Google、Microsoft
+                        </div>
+                    </div>
+
+                    <div class="stock-card">
+                        <div class="stock-card-header">
+                            <h4>緯創</h4>
+                            <span class="stock-code">3231</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">115 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value up">▲ 1.5%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>AI 伺服器組裝<br>
+                            <strong>關鍵客戶：</strong>NVIDIA、AWS
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下游 -->
+            <div class="chain-section">
+                <div class="icon">📱</div>
+                <h3>下游 - 應用與服務</h3>
+                <p style="color:#666;margin-bottom:15px;">AI 軟體、雲端服務、終端應用等</p>
+                
+                <div class="stock-grid">
+                    <div class="stock-card">
+                        <div class="stock-card-header">
+                            <h4>中華電</h4>
+                            <span class="stock-code">2412</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">128 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value">0%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>電信 AI 服務、邊緣運算<br>
+                            <strong>關鍵業務：</strong>5G + AI 應用
+                        </div>
+                    </div>
+
+                    <div class="stock-card">
+                        <div class="stock-card-header">
+                            <h4>大立光</h4>
+                            <span class="stock-code">3008</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-info-item">
+                                <div class="label">目前價</div>
+                                <div class="value">2,450 元</div>
+                            </div>
+                            <div class="stock-info-item">
+                                <div class="label">漲跌</div>
+                                <div class="value up">▲ 0.8%</div>
+                            </div>
+                        </div>
+                        <div class="stock-desc">
+                            <strong>AI 地位：</strong>AI 手機鏡頭、光學元件<br>
+                            <strong>關鍵客戶：</strong>Apple、Android 大廠
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 趨勢 -->
+        <div class="ai-trend">
+            <h3>🚀 2026 AI 產業趨勢</h3>
+            <ul>
+                <li><strong>邊緣 AI 爆發：</strong>聯發科、高通推動手機、PC 本地 AI 運算</li>
+                <li><strong>AI 伺服器需求：</strong>NVIDIA GB200 量產，鴻海、廣達受惠</li>
+                <li><strong>機器人應用：</strong>特斯拉 Optimus、Figure AI 帶動台灣供應鏈</li>
+                <li><strong>雲端 AI 服務：</strong>Microsoft Azure、Google Cloud 持續擴張</li>
+                <li><strong>自動駕駛：</strong>NVIDIA DRIVE、Mobileye 推動車用 AI</li>
+            </ul>
+        </div>
+
+        <!-- 操作建議 -->
+        <div style="text-align:center;margin-top:30px;">
+            <a href="https://xbaoamigo-stack.github.io/m.html" class="btn">📊 查看我的持股</a>
+            <a href="https://xbaoamigo-stack.github.io/caisen.html" class="btn">📚 蔡森技術分析</a>
+        </div>
+
+        <div class="footer">
+            🦞 龍蝦投資系統 | 胡總裁專屬<br>
+            資料來源：AI 智慧產業地圖、公開資訊觀測站 | 投資有風險，入市需謹慎
+        </div>
+    </div>
+
+    <script>
+        // 可以後續加入即時股價 API
+        console.log('🤖 AI 產業地圖已載入');
+    </script>
+</body>
+</html>
